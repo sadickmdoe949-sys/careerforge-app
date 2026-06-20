@@ -2,19 +2,20 @@ const express = require('express');
 const mongoose = require('mongoose');
 const cors = require('cors');
 const bcrypt = require('bcryptjs');
+const path = require('path'); // Nimeongeza hii
 
 const app = express();
 app.use(express.json());
 app.use(cors());
 
-// 1. KUUNGANISHA NA DATABASE (Inasoma Atlas live, au Local isipopatikana)
+// --- KUUNGANISHA NA DATABASE ---
 const MONGO_URI = process.env.MONGO_URI || 'mongodb://localhost:27017/cv_pro_db';
 
 mongoose.connect(MONGO_URI)
 .then(() => console.log('✅ Umefanikiwa kuunganisha na Database ya MongoDB!'))
 .catch(err => console.error('❌ Hitilafu ya kuunganisha Database:', err));
 
-// 2. KUTENGENEZA MUUNDO WA TAARIFA (User Schema)
+// --- MUUNDO WA TAARIFA (User Schema) ---
 const userSchema = new mongoose.Schema({
     fullName: { type: String, required: true },
     email: { type: String, required: true, unique: true },
@@ -24,13 +25,13 @@ const userSchema = new mongoose.Schema({
 
 const User = mongoose.model('User', userSchema);
 
-// === NJIA KUU (Home Route) ===
-// Hii inazuia kosa la 'Cannot GET /' na inaonyesha kuwa server ipo hai
+// === NJIA KUU (Hapa ndipo tumebadilisha) ===
+// Sasa inatumia path kuelekeza kwenye index.html
 app.get('/', (req, res) => {
-    res.send('🚀 Karibu! Seva ya CV Pro API Ipo Hewani na Inafanya Kazi Vizuri kabisa!');
+    res.sendFile(path.join(__dirname, 'index.html'));
 });
 
-// 3. NJIA YA KUJISAJILI (Register API Endpoint)
+// --- NJIA YA KUJISAJILI ---
 app.post('/api/register', async (req, res) => {
     try {
         const { fullName, email, password } = req.body;
@@ -49,7 +50,7 @@ app.post('/api/register', async (req, res) => {
     }
 });
 
-// 4. NJIA YA KUINGIA (Login API Endpoint)
+// --- NJIA YA KUINGIA ---
 app.post('/api/login', async (req, res) => {
     try {
         const { email, password } = req.body;
@@ -70,7 +71,7 @@ app.post('/api/login', async (req, res) => {
     }
 });
 
-// WASHA SERVER KUTUMIA PORT YA RENDER AU 5000 YA LOKALO
+// --- WASHA SERVER ---
 const PORT = process.env.PORT || 5000;
 app.listen(PORT, () => {
     console.log(`🚀 Server inafanya kazi kwenye Port: ${PORT}`);
