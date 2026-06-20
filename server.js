@@ -24,6 +24,12 @@ const userSchema = new mongoose.Schema({
 
 const User = mongoose.model('User', userSchema);
 
+// === NJIA KUU (Home Route) ===
+// Hii inazuia kosa la 'Cannot GET /' na inaonyesha kuwa server ipo hai
+app.get('/', (req, res) => {
+    res.send('🚀 Karibu! Seva ya CV Pro API Ipo Hewani na Inafanya Kazi Vizuri kabisa!');
+});
+
 // 3. NJIA YA KUJISAJILI (Register API Endpoint)
 app.post('/api/register', async (req, res) => {
     try {
