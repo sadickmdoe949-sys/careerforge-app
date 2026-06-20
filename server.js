@@ -7,9 +7,10 @@ const app = express();
 app.use(express.json());
 app.use(cors());
 
-// 1. KUUNGANISHA NA DATABASE (MongoDB Local)
-// Hakikisha una MongoDB iliyowashwa au unaweza kutumia hii bure kwenye kompyuta yako
-mongoose.connect('mongodb://localhost:27017/cv_pro_db')
+// 1. KUUNGANISHA NA DATABASE (Inasoma Atlas live, au Local isipopatikana)
+const MONGO_URI = process.env.MONGO_URI || 'mongodb://localhost:27017/cv_pro_db';
+
+mongoose.connect(MONGO_URI)
 .then(() => console.log('✅ Umefanikiwa kuunganisha na Database ya MongoDB!'))
 .catch(err => console.error('❌ Hitilafu ya kuunganisha Database:', err));
 
@@ -28,11 +29,9 @@ app.post('/api/register', async (req, res) => {
     try {
         const { fullName, email, password } = req.body;
         
-        // Angalia kama email tayari ipo
         const userExists = await User.findOne({ email });
         if (userExists) return res.status(400).json({ message: 'Email hii tayari imeshasajiliwa!' });
 
-        // Ficha namba ya siri (Hash password)
         const hashedPassword = await bcrypt.hash(password, 10);
 
         const newUser = new User({ fullName, email, password: hashedPassword, documents: [] });
@@ -65,8 +64,8 @@ app.post('/api/login', async (req, res) => {
     }
 });
 
-// WASHA SERVER KUTUMIA PORT 5000
-const PORT = 5000;
+// WASHA SERVER KUTUMIA PORT YA RENDER AU 5000 YA LOKALO
+const PORT = process.env.PORT || 5000;
 app.listen(PORT, () => {
-    console.log(`🚀 Server inafanya kazi kwenye http://localhost:${PORT}`);
+    console.log(`🚀 Server inafanya kazi kwenye Port: ${PORT}`);
 });
