@@ -298,7 +298,6 @@
 
     <script>
         let currentMode = 'login';
-        // Kama unajaribu kwenye kompyuta yako (localhost), tumia '/api' pekee.
         const API_URL = '/api'; 
 
         window.onload = function() {
@@ -407,10 +406,12 @@
                 documents.forEach((doc) => {
                     const badge = doc.type === 'CV' ? '<span class="badge" style="background:#e0f2fe; color:#0369a1;">CV</span>' : '<span class="badge" style="background:#dcfce7; color:#15803d;">Letter</span>';
                     
-                    // Kubadilisha trigger ya zamani iite mfumo halisi wa kupakua PDF
-                    const docData = JSON.stringify({ fullName: doc.title.replace('.pdf', ''), email: localStorage.getItem('userEmail'), skills: doc.skills || '', experience: doc.experience || '' });
-                    
-                    tableHTML += `<tr><td>📄 ${doc.title}</td><td>${badge}</td><td>${doc.date}</td><td><button class="btn-view-all" style="color:var(--primary-blue);" onclick='triggerRealDownload(${docData})'>Download</button></td></tr>`;
+                    tableHTML += `<tr>
+                        <td>📄 ${doc.title}</td>
+                        <td>${badge}</td>
+                        <td>${new Date(doc.createdAt || Date.now()).toLocaleDateString('en-US', { month: 'short', day: 'numeric', year: 'numeric' })}</td>
+                        <td><a href="${doc.fileUrl}" target="_blank" class="btn-view-all" style="color:var(--primary-blue); text-decoration:none; font-weight:600;">Download</a></td>
+                    </tr>`;
                 });
                 tableHTML += `</tbody></table>`;
 
@@ -419,60 +420,63 @@
             } catch(e) { console.error(e); }
         }
 
-        // --- FUNGUO YA KUSHUSHA PDF HALISI KUTOKA BACKEND ---
-        async function triggerRealDownload(cvData) {
-            try {
-                let currentDl = parseInt(document.getElementById('stat-dl-count').innerText);
-                document.getElementById('stat-dl-count').innerText = currentDl + 1;
-
-                const response = await fetch(API_URL + '/generate-pdf', {
-                    method: 'POST',
-                    headers: { 'Content-Type': 'application/json' },
-                    body: JSON.stringify({
-                        fullName: cvData.fullName,
-                        email: cvData.email,
-                        skills: cvData.skills || 'Ujuzi wa Kiteknolojia na Uongozi',
-                        experience: cvData.experience || 'Uzoefu wa Kazi na Miradi mbalimbali'
-                    })
-                });
-
-                if (!response.ok) throw new Error('Seva imeshindwa kutengeneza PDF');
-
-                const blob = await response.blob();
-                const url = window.URL.createObjectURL(blob);
-                const a = document.createElement('a');
-                a.href = url;
-                a.download = `${cvData.fullName.replace(/\s+/g, '_')}_CV.pdf`;
-                document.body.appendChild(a);
-                a.click();
-                document.body.removeChild(a);
-                window.URL.revokeObjectURL(url);
-            } catch (error) {
-                alert('Marekebisho: Imeshindwa kupakua PDF halisi. Hakikisha seva imewashwa.');
-            }
-        }
-
         async function generateDocument(type) {
             const userId = localStorage.getItem('userId');
-            if(!userId) return;
+            if (!userId) { alert('Tafadhali ingia kwenye akaunti kwanza!'); return; }
+            
             const titleInput = type === 'CV' ? document.getElementById('cv-title') : document.getElementById('cl-title');
             const expInput = type === 'CV' ? document.getElementById('cv-exp') : document.getElementById('cl-body');
             const title = titleInput.value.trim();
             const content = expInput.value.trim();
             
-            if(!title) { alert(`Tafadhali andika kichwa cha habari!`); return; }
+            if(!title || !content) { alert(`Tafadhali jaza sehemu zote muhimu!`); return; }
             
-            const date = new Date().toLocaleDateString('en-US', { month: 'short', day: 'numeric', year: 'numeric' });
-            
-            // Moja kwa moja tunapakua PDF halisi pindi tu mtumiaji anapoitengeneza
-            const userFullName = localStorage.getItem('userFullName') || title;
-            const userEmail = localStorage.getItem('userEmail') || '';
-            
-            triggerRealDownload({ fullName: userFullName, email: userEmail, skills: type === 'CV' ? content : '', experience: type === 'CV' ? content : '' });
+            const userFullName = localStorage.getItem('userFullName') || 'Mtumiaji';
+            const userEmail = localStorage.getItem('userEmail') || 'email@example.com';
 
-            titleInput.value = '';
-            expInput.value = '';
-            switchPage('dashboard');
+            try {
+                // Hapa sasa inapiga Cloudinary kupitia backend
+                const response = await fetch(API_URL + '/generate-pdf', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({
+                        userId: userId,
+                        fullName: userFullName,
+                        email: userEmail,
+                        skills: type === 'CV' ? 'Ujuzi uliowekwa kwenye mfumo' : '', 
+                        experience: content,
+                        type: type === 'CV' ? 'CV' : 'Cover Letter',
+                        title: title
+                    })
+                });
+
+                if (!response.ok) {
+                    const errData = await response.json();
+                    alert(errData.message || 'Seva imeshindwa kutengeneza na kurusha PDF.');
+                    return;
+                }
+
+                // Inashusha local copy kwa user hapo hapo
+                const blob = await response.blob();
+                const url = window.URL.createObjectURL(blob);
+                const a = document.createElement('a');
+                a.href = url;
+                a.download = `${title.replace(/\s+/g, '_')}_${type}.pdf`;
+                document.body.appendChild(a);
+                a.click();
+                document.body.removeChild(a);
+
+                alert('Hongera! Hati imetengenezwa na kuhifadhiwa mtandaoni salama!');
+                
+                titleInput.value = '';
+                expInput.value = '';
+                
+                loadDocumentsTable();
+                switchPage('dashboard');
+            } catch (error) {
+                console.error(error);
+                alert('Mawasiliano na seva yamefeli. Hakikisha seva yako ya Render iko hewani.');
+            }
         }
 
         function executePaymentMock() {
@@ -512,24 +516,25 @@
                     subTitle.innerText = `Welcome back, ${user}! Let's build your future.`;
                 } else if(pageId === 'account') {
                     mainTitle.innerText = "My Account";
-                    subTitle.innerText = "Simamia taarifa zako za siri na usalama wa akaunti.";
+                    subTitle.innerText = "Simamia na uhakiki taarifa zako za wasifu.";
                 } else if(pageId === 'cv') {
                     mainTitle.innerText = "CV Builder Workspace";
-                    subTitle.innerText = "Jaza taarifa zako kutengeneza CV yenye viwango vya juu.";
+                    subTitle.innerText = "Jaza fomu hapa chini kutengeneza CV ya kisasa.";
                 } else if(pageId === 'cover') {
-                    mainTitle.innerText = "Cover Letter Workspace";
-                    subTitle.innerText = "Tengeneza barua kali za maombi ya kazi.";
+                    mainTitle.innerText = "Cover Letter Generator";
+                    subTitle.innerText = "Andika barua rasmi ya maombi ya kazi kwa dakika chache.";
                 } else if(pageId === 'docs') {
                     mainTitle.innerText = "My Documents Library";
-                    subTitle.innerText = "Nyaraka zako zote zilizookolewa salama kwenye maktaba ya CareerForge.";
+                    subTitle.innerText = "Hapa kuna orodha ya hati zako zote zilizopo Cloudinary.";
                 } else if(pageId === 'payments') {
-                    mainTitle.innerText = "Payments & Premium Upgrade";
-                    subTitle.innerText = "Ongeza salio au thibitisha malipo yako ya Premium hapa.";
+                    mainTitle.innerText = "Payments & Subscription";
+                    subTitle.innerText = "Weka salio au jiunge na Premium kufungua fursa zaidi.";
                 }
-
-                const sidebar = document.getElementById('app-sidebar');
-                if (sidebar) { sidebar.classList.remove('active'); }
-            } catch(e) { console.error("Navigation System Error bypassed safely:", e); }
+                
+                if (window.innerWidth <= 768) {
+                    document.getElementById('app-sidebar').classList.remove('active');
+                }
+            } catch(e) { console.error(e); }
         }
     </script>
 </body>
