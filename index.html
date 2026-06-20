@@ -3,79 +3,441 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>CareerForge | Professional Dashboard</title>
+    
+    <title>CareerForge - Professional CV & Resume Builder</title>
+
+    <meta property="og:title" content="CareerForge | Jenga CV Yako ya Kitaalamu" />
+    <meta property="og:description" content="Tengeneza CV na Cover Letter ya kisasa kwa dakika chache. Vutia waajiri na ufungue milango ya fursa mpya sasa." />
+    <meta property="og:type" content="website" />
+    <meta property="og:image" content="https://images.unsplash.com/photo-1586281380349-632531db7ed4?q=80&w=1200&auto=format&fit=crop" />
+
     <style>
-        :root { --sidebar-bg: #07224f; --main-bg: #f4f7fc; --primary-blue: #0066ff; }
-        * { box-sizing: border-box; margin: 0; padding: 0; font-family: sans-serif; }
-        body { display: flex; background-color: var(--main-bg); min-height: 100vh; }
+        :root {
+            --sidebar-bg: #07224f;
+            --main-bg: #f4f7fc;
+            --primary-blue: #0066ff;
+            --text-dark: #1e293b;
+            --text-muted: #64748b;
+            --border-color: #e2e8f0;
+            --card-bg: #ffffff;
+            --wallet-blue: #0056e0;
+        }
+
+        * { box-sizing: border-box; margin: 0; padding: 0; font-family: 'Segoe UI', system-ui, sans-serif; }
+        body { display: flex; background-color: var(--main-bg); color: var(--text-dark); min-height: 100vh; overflow: hidden; }
+
+        /* AUTH LAYER */
+        #auth-overlay { position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(7, 34, 79, 0.98); display: flex; align-items: center; justify-content: center; z-index: 99999; }
+        .auth-card { background: white; padding: 36px; border-radius: 16px; width: 100%; max-width: 420px; box-shadow: 0 20px 25px -5px rgba(0,0,0,0.3); }
+        .auth-toggle { display: flex; justify-content: space-between; margin-bottom: 24px; border-bottom: 2px solid #e2e8f0; padding-bottom: 12px; }
+        .auth-toggle span { cursor: pointer; font-weight: 700; color: var(--text-muted); font-size: 15px; }
+        .auth-toggle span.active { color: var(--primary-blue); border-bottom: 3px solid var(--primary-blue); padding-bottom: 11px; }
+
+        /* Sidebar Navigation */
+        .sidebar { width: 260px; background-color: var(--sidebar-bg); color: #ffffff; padding: 24px 16px; display: flex; flex-direction: column; justify-content: space-between; flex-shrink: 0; }
+        .brand { display: flex; align-items: center; gap: 12px; margin-bottom: 32px; padding-left: 8px; }
         
-        /* Auth */
-        #auth-overlay { position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: #07224f; display: flex; align-items: center; justify-content: center; z-index: 9999; }
-        .auth-card { background: white; padding: 30px; border-radius: 12px; width: 350px; }
+        .menu { list-style: none; display: flex; flex-direction: column; gap: 4px; }
+        .menu-item a { display: flex; align-items: center; gap: 12px; color: #94a3b8; text-decoration: none; padding: 12px; border-radius: 8px; font-size: 14px; cursor: pointer; transition: all 0.2s; }
+        .menu-item a:hover { background-color: rgba(255, 255, 255, 0.05); color: #ffffff; }
+        .menu-item.active a { background-color: var(--primary-blue); color: #ffffff; font-weight: 600; }
+
+        .premium-box { background: rgba(255,255,255,0.05); border: 1px solid rgba(255,255,255,0.1); border-radius: 12px; padding: 16px; text-align: center; }
+        .premium-box h3 { font-size: 14px; margin-bottom: 8px; color: #fbbf24; }
+        .btn-upgrade { background-color: var(--primary-blue); color: white; border: none; padding: 8px 16px; border-radius: 6px; font-size: 13px; font-weight: 600; cursor: pointer; width: 100%; }
+
+        /* Main Workspace Content Area */
+        .main-container { flex-grow: 1; padding: 32px; display: flex; flex-direction: column; gap: 24px; overflow-y: auto; height: 100vh; }
+        .header { display: flex; justify-content: space-between; align-items: center; padding-bottom: 12px; }
+        .welcome-text h2 { font-size: 26px; font-weight: 700; color: var(--text-dark); margin-bottom: 4px; }
+        .welcome-text p { color: var(--text-muted); font-size: 14px; }
+        
+        .header-right { display: flex; align-items: center; gap: 16px; }
+        .notification-bell { position: relative; cursor: pointer; font-size: 20px; background: #fff; width: 38px; height: 38px; display: flex; align-items: center; justify-content: center; border-radius: 50%; border: 1px solid var(--border-color); }
+        .bell-badge { position: absolute; top: -2px; right: -2px; background: #ef4444; color: white; font-size: 10px; padding: 2px 5px; border-radius: 10px; font-weight: bold; }
+        .user-profile { display: flex; align-items: center; gap: 10px; background: #ffffff; padding: 4px 14px 4px 4px; border-radius: 30px; border: 1px solid var(--border-color); }
+        .avatar { width: 32px; height: 32px; border-radius: 50%; background-color: #e2e8f0; display: flex; align-items: center; justify-content: center; font-weight: bold; color: var(--text-muted); font-size: 14px; }
+        .user-name { font-size: 13px; font-weight: 600; }
+        .btn-logout { background-color: #ef4444; color: white; border: none; padding: 8px 14px; border-radius: 8px; font-size: 12px; font-weight: 600; cursor: pointer; }
+
+        /* Rows Structures */
+        .stats-grid { display: grid; grid-template-columns: repeat(4, 1fr); gap: 20px; }
+        .stat-card { background-color: var(--card-bg); border-radius: 14px; padding: 24px; display: flex; align-items: center; gap: 16px; border: 1px solid var(--border-color); }
+        .stat-icon { width: 44px; height: 44px; border-radius: 10px; display: flex; align-items: center; justify-content: center; font-size: 22px; background-color: #f8fafc; }
+        .stat-info h3 { font-size: 28px; font-weight: 700; color: var(--text-dark); line-height: 1.1; }
+        .stat-info p { color: var(--text-muted); font-size: 13px; margin-top: 2px; }
+        .stat-link { font-size: 12px; color: var(--primary-blue); text-decoration: none; font-weight: 600; margin-top: 4px; display: inline-flex; align-items: center; gap: 4px; cursor: pointer; }
+
+        .grid-split { display: grid; grid-template-columns: 2fr 1fr; gap: 24px; }
+        .dashboard-card { background-color: var(--card-bg); border-radius: 14px; border: 1px solid var(--border-color); padding: 24px; }
+        .card-title { font-size: 15px; font-weight: 700; color: var(--text-dark); margin-bottom: 20px; }
+        
+        .quick-actions-layout { display: grid; grid-template-columns: 1fr 1fr; gap: 16px; }
+        .action-box { border: 1px solid #f1f5f9; border-radius: 12px; padding: 20px; background-color: #f8fafc; display: flex; flex-direction: column; gap: 8px; }
+        .action-box h5 { font-size: 14px; font-weight: 700; }
+        .action-box p { font-size: 12px; color: var(--text-muted); line-height: 1.5; min-height: 36px; }
+        .btn-action-start { background-color: var(--primary-blue); color: #ffffff; border: none; padding: 10px; border-radius: 8px; font-size: 13px; font-weight: 600; cursor: pointer; width: 100%; margin-top: 8px; }
+
+        /* Wallet Setup */
+        .wallet-card { background-color: var(--wallet-blue); color: #ffffff; border-radius: 14px; padding: 24px; display: flex; flex-direction: column; justify-content: space-between; position: relative; overflow: hidden; min-height: 180px; box-shadow: 0 10px 15px -3px rgba(0, 102, 255, 0.2); }
+        .wallet-card::after { content: ''; position: absolute; right: -20px; bottom: -20px; width: 120px; height: 120px; background: rgba(255,255,255,0.06); border-radius: 50%; }
+        .wallet-title { font-size: 12px; color: rgba(255, 255, 255, 0.8); font-weight: 600; }
+        .wallet-balance { font-size: 28px; font-weight: 700; margin: 8px 0; }
+        .wallet-subtitle { font-size: 11px; color: rgba(255, 255, 255, 0.7); margin-bottom: 16px; }
+        .btn-add-money { background: #ffffff; color: var(--primary-blue); border: none; padding: 10px 16px; border-radius: 8px; font-size: 13px; font-weight: 700; cursor: pointer; display: inline-flex; align-items: center; gap: 6px; width: fit-content; }
+
+        .recent-section { background-color: var(--card-bg); border-radius: 14px; border: 1px solid var(--border-color); padding: 24px; }
+        .section-header { display: flex; justify-content: space-between; align-items: center; margin-bottom: 16px; }
+        .btn-view-all { background: #f1f5f9; color: var(--text-dark); border: none; padding: 6px 12px; border-radius: 6px; font-size: 12px; font-weight: 600; cursor: pointer; }
+        
+        .doc-table { width: 100%; border-collapse: collapse; text-align: left; }
+        .doc-table th { color: var(--text-muted); font-size: 12px; font-weight: 600; padding-bottom: 12px; border-bottom: 1px solid var(--border-color); }
+        .doc-table td { padding: 14px 0; border-bottom: 1px solid #f8fafc; font-size: 13px; }
+        .badge { font-size: 11px; padding: 4px 8px; border-radius: 4px; font-weight: 600; }
+
+        .form-group { margin-bottom: 16px; }
+        .form-group label { display: block; font-size: 13px; font-weight: 600; margin-bottom: 6px; }
+        .form-control { width: 100%; padding: 10px 14px; border: 1px solid var(--border-color); border-radius: 8px; font-size: 13px; }
+        .empty-state { text-align: center; padding: 32px; color: var(--text-muted); font-size: 13px; }
+        
         .hidden { display: none !important; }
-        
-        /* Sidebar */
-        .sidebar { width: 260px; background-color: var(--sidebar-bg); color: white; padding: 20px; }
-        .menu-item { padding: 12px; cursor: pointer; border-radius: 8px; margin-bottom: 5px; }
-        .menu-item:hover { background: var(--primary-blue); }
-        
-        /* Main */
-        .main-container { flex-grow: 1; padding: 30px; }
-        .form-control { width: 100%; padding: 10px; margin: 10px 0; border: 1px solid #ccc; border-radius: 5px; }
-        .btn { width: 100%; padding: 12px; background: var(--primary-blue); color: white; border: none; cursor: pointer; border-radius: 5px; }
     </style>
 </head>
 <body>
 
     <div id="auth-overlay">
         <div class="auth-card">
-            <h2 id="auth-title">Ingia</h2>
-            <div id="auth-fields">
-                <input type="email" id="email" class="form-control" placeholder="Email">
-                <input type="password" id="pass" class="form-control" placeholder="Password">
-                <button class="btn" onclick="handleAuth()">Ingia</button>
+            <div class="auth-toggle">
+                <span id="tab-login" class="active" onclick="toggleAuthMode('login')">Ingia (Login)</span>
+                <span id="tab-register" onclick="toggleAuthMode('register')">Jisajili (Register)</span>
             </div>
+            <div id="register-fields" class="hidden">
+                <div class="form-group"><label>Jina Lako Kamili</label><input type="text" id="auth-fullname" class="form-control" placeholder="Mfn: Abubakar"></div>
+            </div>
+            <div class="form-group"><label>Barua Pepe (Email)</label><input type="email" id="auth-email" class="form-control" placeholder="jina@email.com"></div>
+            <div class="form-group"><label>Namba ya Siri (Password)</label><input type="password" id="auth-password" class="form-control" placeholder="******"></div>
+            <button class="btn-action-start" style="padding: 12px;" id="btn-auth-submit" onclick="handleAuth()">Ingia Kwenye Dashboard</button>
         </div>
     </div>
 
     <aside class="sidebar">
-        <h2>CareerForge</h2>
-        <div class="menu-item" onclick="alert('Dashboard inafunguka...')">📊 Dashboard</div>
-        <div class="menu-item" onclick="logout()">🚪 Logout</div>
+        <div>
+            <div class="brand">
+                <div class="brand-icon" style="background: #ffffff; color: #07224f;">🛠️</div>
+                <div class="brand-text">
+                    <h1 style="font-size: 20px; font-weight: 700;">CareerForge</h1>
+                </div>
+            </div>
+            <ul class="menu">
+                <li class="menu-item active" id="menu-dashboard"><a onclick="switchPage('dashboard')">📊 Dashboard</a></li>
+                <li class="menu-item" id="menu-account"><a onclick="switchPage('account')">👤 My Account</a></li>
+                <li class="menu-item" id="menu-cv"><a onclick="switchPage('cv')">🛠️ CV Builder</a></li>
+                <li class="menu-item" id="menu-cover"><a onclick="switchPage('cover')">✉️ Cover Letter Builder</a></li>
+                <li class="menu-item" id="menu-docs"><a onclick="switchPage('docs')">📁 My Documents</a></li>
+                <li class="menu-item" id="menu-payments"><a onclick="switchPage('payments')">💳 Payments</a></li>
+            </ul>
+        </div>
+        <div class="premium-box"><h3>👑 Go Premium</h3><button class="btn-upgrade" onclick="switchPage('payments')">Upgrade</button></div>
     </aside>
 
     <main class="main-container">
-        <h1>Dashboard</h1>
-        <p>Karibu kwenye mfumo wako.</p>
+        <header class="header">
+            <div class="welcome-text"><h2 id="page-main-title">Dashboard Overview</h2><p id="page-sub-title">Karibu! Jaza taarifa zako kuanza.</p></div>
+            <div class="header-right">
+                <div class="notification-bell">🔔<div class="bell-badge" id="bell-count">0</div></div>
+                <div class="user-profile"><div class="avatar" id="avatar-initials">-</div><span class="user-name" id="profile-user-display">Mtumiaji</span></div>
+                <button class="btn-logout" onclick="logout()">Logout</button>
+            </div>
+        </header>
+
+        <div id="page-dashboard" class="dynamic-page">
+            <section class="stats-grid" style="margin-bottom: 24px;">
+                <div class="stat-card">
+                    <div class="stat-icon" style="color:#0066ff;">📄</div>
+                    <div class="stat-info"><h3 id="stat-cv-count">0</h3><p>My CVs</p><a class="stat-link" onclick="switchPage('cv')">Angalia →</a></div>
+                </div>
+                <div class="stat-card">
+                    <div class="stat-icon" style="color:#10b981;">📝</div>
+                    <div class="stat-info"><h3 id="stat-cl-count">0</h3><p>Cover Letters</p><a class="stat-link" onclick="switchPage('cover')">Angalia →</a></div>
+                </div>
+                <div class="stat-card">
+                    <div class="stat-icon" style="color:#f59e0b;">💳</div>
+                    <div class="stat-info"><h3 id="stat-pay-count">0</h3><p>Payments</p><a class="stat-link" onclick="switchPage('payments')">Angalia →</a></div>
+                </div>
+                <div class="stat-card">
+                    <div class="stat-icon" style="color:#6366f1;">📥</div>
+                    <div class="stat-info"><h3 id="stat-dl-count">0</h3><p>Downloads</p></div>
+                </div>
+            </section>
+
+            <div class="grid-split" style="margin-bottom: 24px;">
+                <div class="dashboard-card">
+                    <h4 class="card-title">Quick Actions</h4>
+                    <div class="quick-actions-layout">
+                        <div class="action-box">
+                            <h5>Create New CV</h5>
+                            <p>Tengeneza CV ya kisasa na ya kitaalamu sasa hivi.</p>
+                            <button class="btn-action-start" onclick="switchPage('cv')">Anza Kutengeneza</button>
+                        </div>
+                        <div class="action-box">
+                            <h5>Create Cover Letter</h5>
+                            <p>Andika barua ya maombi ya kazi inayovutia waajiri.</p>
+                            <button class="btn-action-start" onclick="switchPage('cover')">Anza Kuandika</button>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="wallet-card">
+                    <div>
+                        <div class="wallet-title">Salio la Wallet</div>
+                        <div class="wallet-balance" id="wallet-display">TZS 0</div>
+                        <div class="wallet-subtitle">Salio Linalotumika</div>
+                    </div>
+                    <button class="btn-add-money" onclick="switchPage('payments')">➕ Weka Hela</button>
+                </div>
+            </div>
+
+            <div class="recent-section">
+                <div class="section-header"><h4>Nyaraka za Hivi Karibuni</h4><button class="btn-view-all" onclick="switchPage('docs')">Ona Zote</button></div>
+                <div id="recent-docs-list">
+                    <div class="empty-state">Hakuna hati zilizohifadhiwa kwa sasa.</div>
+                </div>
+            </div>
+        </div>
+
+        <div id="page-account" class="dynamic-page hidden">
+            <div class="dashboard-card" style="max-width: 500px;">
+                <h4 class="card-title">Taarifa za Akaunti</h4>
+                <div style="display:flex; flex-direction:column; gap:12px; font-size:14px;">
+                    <p><strong>Jina:</strong> <span id="acc-name">-</span></p>
+                    <p><strong>Barua Pepe:</strong> <span id="acc-email">-</span></p>
+                    <p><strong>Hali ya Akaunti:</strong> <span class="badge" style="background:#e2e8f0; color:#475569;">Mtumiaji Mpya</span></p>
+                </div>
+            </div>
+        </div>
+
+        <div id="page-cv" class="dynamic-page hidden">
+            <div class="dashboard-card" style="max-width: 600px;">
+                <h4 class="card-title">Tengeneza CV Mpya</h4>
+                <div class="form-group"><label>Kazi Unayoomba (Job Title)</label><input type="text" id="cv-title" class="form-control" placeholder="Mfn: Software Engineer"></div>
+                <div class="form-group"><label>Uzoefu na Ustadi (Experience & Skills)</label><textarea id="cv-exp" class="form-control" style="height:120px;" placeholder="Andika maelezo ya kazi na uzoefu wako hapa..."></textarea></div>
+                <button class="btn-action-start" onclick="generateDocument('CV')">Hifadhi na Tengeneza CV</button>
+            </div>
+        </div>
+
+        <div id="page-cover" class="dynamic-page hidden">
+            <div class="dashboard-card" style="max-width: 600px;">
+                <h4 class="card-title">Andika Barua ya Maombi (Cover Letter)</h4>
+                <div class="form-group"><label>Kichwa cha Barua (Subject)</label><input type="text" id="cl-title" class="form-control" placeholder="Mfn: Ombi la Kazi ya IT Specialist"></div>
+                <div class="form-group"><label>Mwili wa Barua (Letter Body)</label><textarea id="cl-body" class="form-control" style="height:140px;" placeholder="Andika barua yako kwa kina hapa..."></textarea></div>
+                <button class="btn-action-start" onclick="generateDocument('Cover Letter')">Hifadhi na Tengeneza Barua</button>
+            </div>
+        </div>
+
+        <div id="page-docs" class="dynamic-page hidden">
+            <div class="dashboard-card">
+                <h4 class="card-title">Maktaba ya Nyaraka Zako Zote</h4>
+                <div id="docs-full-wrapper">
+                    <div class="empty-state">Hifadhi kwanza CV au Barua ili zionekane hapa.</div>
+                </div>
+            </div>
+        </div>
+
+        <div id="page-payments" class="dynamic-page hidden">
+            <div class="dashboard-card" style="max-width: 500px;">
+                <h4 class="card-title">Lipia Huduma ya Premium</h4>
+                <p style="font-size:13px; margin-bottom:16px; color:var(--text-muted);">Lipia kupata uwezo wa kudownload templates zisizo na kikomo.</p>
+                <div class="form-group"><label>Chagua Mtandao</label>
+                    <select class="form-control"><option>M-Pesa (Vodacom)</option><option>Tigo Pesa (Tigo)</option><option>Airtel Money (Airtel)</option></select>
+                </div>
+                <div class="form-group"><label>Kiasi (TZS)</label><input type="number" id="pay-amount-input" class="form-control" value="5000"></div>
+                <div class="form-group"><label>Namba ya Simu</label><input type="text" class="form-control" placeholder="07xxxxxxxx"></div>
+                <button class="btn-action-start" onclick="executePaymentMock()">Thibitisha Malipo Sasa</button>
+            </div>
+        </div>
     </main>
 
     <script>
-        // 1. Angalia Login wakati wa kufungua
-        window.onload = () => {
-            if (localStorage.getItem('isAuth') === 'true') {
-                document.getElementById('auth-overlay').classList.add('hidden');
-            }
-        };
+        let currentMode = 'login';
+        
+        // UTATUZI MKUU: Mfumo sasa unaenda moja kwa moja kwenye link yako ya live ya Render!
+        const API_URL = 'https://careerforge-app.onrender.com/api';
 
-        // 2. Kazi ya Login
-        function handleAuth() {
-            const email = document.getElementById('email').value;
-            const pass = document.getElementById('pass').value;
-            
-            if(email && pass) {
-                localStorage.setItem('isAuth', 'true');
-                document.getElementById('auth-overlay').classList.add('hidden');
-                alert("Karibu!");
+        window.onload = function() {
+            try {
+                const userId = localStorage.getItem('userId');
+                const savedUser = localStorage.getItem('userFullName');
+                if (savedUser && userId) {
+                    document.getElementById('auth-overlay').classList.add('hidden');
+                    updateUserUIDisplay(savedUser);
+                    loadDocumentsTable();
+                }
+            } catch(e) { console.error(e); }
+        }
+
+        function toggleAuthMode(mode) {
+            currentMode = mode;
+            document.getElementById('tab-login').classList.remove('active');
+            document.getElementById('tab-register').classList.remove('active');
+            document.getElementById('register-fields').classList.add('hidden');
+            if (mode === 'register') {
+                document.getElementById('tab-register').classList.add('active');
+                document.getElementById('register-fields').classList.remove('hidden');
+                document.getElementById('btn-auth-submit').innerText = 'Kamilisha Usajili';
             } else {
-                alert("Tafadhali jaza maelezo yote!");
+                document.getElementById('tab-login').classList.add('active');
+                document.getElementById('btn-auth-submit').innerText = 'Ingia Kwenye Dashboard';
             }
         }
 
-        // 3. Kazi ya Logout
-        function logout() {
-            localStorage.removeItem('isAuth');
-            location.reload();
+        async function handleAuth() {
+            const email = document.getElementById('auth-email').value.trim();
+            const password = document.getElementById('auth-password').value.trim();
+            const fullName = document.getElementById('auth-fullname').value.trim();
+            if (!email || !password || (currentMode === 'register' && !fullName)) { alert('Tafadhali jaza sehemu zote!'); return; }
+            const endpoint = currentMode === 'register' ? '/register' : '/login';
+            const bodyData = currentMode === 'register' ? { fullName, email, password } : { email, password };
+            try {
+                const response = await fetch(API_URL + endpoint, { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify(bodyData) });
+                const data = await response.json();
+                if (!response.ok) { alert(data.message); return; }
+                localStorage.setItem('userId', data.userId);
+                localStorage.setItem('userFullName', data.fullName);
+                localStorage.setItem('userEmail', email);
+                updateUserUIDisplay(data.fullName);
+                document.getElementById('auth-overlay').classList.add('hidden');
+                loadDocumentsTable();
+            } catch (error) { alert('Imeshindwa kuunganishwa na server. Hakikisha Backend yako inakimbia.'); }
         }
+
+        function updateUserUIDisplay(name) {
+            try {
+                document.getElementById('page-sub-title').innerText = `Welcome back, ${name}! Let's build your future.`;
+                document.getElementById('profile-user-display').innerText = name;
+                document.getElementById('acc-name').innerText = name;
+                document.getElementById('acc-email').innerText = localStorage.getItem('userEmail') || '-';
+                document.getElementById('avatar-initials').innerText = name.charAt(0).toUpperCase();
+            } catch(e) { console.error(e); }
+        }
+
+        async function loadDocumentsTable() {
+            const userId = localStorage.getItem('userId');
+            if(!userId) return;
+            try {
+                const response = await fetch(API_URL + `/documents?userId=${userId}`);
+                const documents = await response.json();
+                if (!response.ok) return;
+                updateStatsAndTable(documents);
+            } catch (e) { console.error('Error loading documents:', e); }
+        }
+
+        function updateStatsAndTable(documents) {
+            try {
+                const cvs = documents.filter(d => d.type === 'CV').length;
+                const cls = documents.filter(d => d.type === 'Cover Letter').length;
+                document.getElementById('stat-cv-count').innerText = cvs;
+                document.getElementById('stat-cl-count').innerText = cls;
+
+                const recentWrapper = document.getElementById('recent-docs-list');
+                const fullWrapper = document.getElementById('docs-full-wrapper');
+
+                if (documents.length === 0) {
+                    const emptyHTML = `<div class="empty-state">Hakuna hati zilizohifadhiwa kwa sasa.</div>`;
+                    recentWrapper.innerHTML = emptyHTML;
+                    fullWrapper.innerHTML = emptyHTML;
+                    return;
+                }
+
+                let tableHTML = `<table class="doc-table"><thead><tr><th>Jina la Faili</th><th>Aina</th><th>Tarehe</th><th>Action</th></tr></thead><tbody>`;
+                documents.forEach((doc) => {
+                    const badge = doc.type === 'CV' ? '<span class="badge" style="background:#e0f2fe; color:#0369a1;">CV</span>' : '<span class="badge" style="background:#dcfce7; color:#15803d;">Letter</span>';
+                    tableHTML += `<tr><td>📄 ${doc.title}</td><td>${badge}</td><td>${doc.date}</td><td><button class="btn-view-all" style="color:var(--primary-blue);" onclick="triggerDownloadMock()">Download</button></td></tr>`;
+                });
+                tableHTML += `</tbody></table>`;
+
+                recentWrapper.innerHTML = tableHTML;
+                fullWrapper.innerHTML = tableHTML;
+            } catch(e) { console.error(e); }
+        }
+
+        async function generateDocument(type) {
+            const userId = localStorage.getItem('userId');
+            if(!userId) return;
+            const titleInput = type === 'CV' ? document.getElementById('cv-title') : document.getElementById('cl-title');
+            const title = titleInput.value.trim();
+            if(!title) { alert(`Tafadhali andika kichwa cha habari!`); return; }
+            const date = new Date().toLocaleDateString('en-US', { month: 'short', day: 'numeric', year: 'numeric' });
+            try {
+                const response = await fetch(API_URL + '/documents/generate', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ userId, title: title + ".pdf", type, date })
+                });
+                if (!response.ok) return;
+                titleInput.value = '';
+                if(type === 'CV') document.getElementById('cv-exp').value = ''; else document.getElementById('cl-body').value = '';
+                loadDocumentsTable();
+                alert(`Hongera! ${type} yako imetengenezwa na kuhifadhiwa.`);
+                switchPage('dashboard');
+            } catch (error) { alert('Hitilafu ya Server wakati wa kutengeneza hati.'); }
+        }
+
+        function executePaymentMock() {
+            const amount = document.getElementById('pay-amount-input').value;
+            if(!amount || amount <= 0) return;
+            document.getElementById('wallet-display').innerText = `TZS ${parseInt(amount).toLocaleString()}`;
+            document.getElementById('stat-pay-count').innerText = "1";
+            document.getElementById('bell-count').innerText = "1";
+            alert(`Malipo ya TZS ${parseInt(amount).toLocaleString()} yamekamilika! Salio limeongezeka kwenye wallet.`);
+            switchPage('dashboard');
+        }
+
+        function triggerDownloadMock() {
+            let currentDl = parseInt(document.getElementById('stat-dl-count').innerText);
+            document.getElementById('stat-dl-count').innerText = currentDl + 1;
+            alert('Kupakua kuanza hivi punde...');
+        }
+
+        function switchPage(pageId) {
+            try {
+                document.querySelectorAll('.dynamic-page').forEach(p => p.classList.add('hidden'));
+                document.querySelectorAll('.menu-item').forEach(m => m.classList.remove('active'));
+                
+                const targetPage = document.getElementById('page-' + pageId);
+                const targetMenu = document.getElementById('menu-' + pageId);
+                
+                if(targetPage) targetPage.classList.remove('hidden');
+                if(targetMenu) targetMenu.classList.add('active');
+                
+                const mainTitle = document.getElementById('page-main-title');
+                const subTitle = document.getElementById('page-sub-title');
+                const user = localStorage.getItem('userFullName') || 'Mtumiaji';
+
+                if(!mainTitle || !subTitle) return;
+
+                if(pageId === 'dashboard') {
+                    mainTitle.innerText = "Dashboard Overview";
+                    subTitle.innerText = `Welcome back, ${user}! Let's build your future.`;
+                } else if(pageId === 'account') {
+                    mainTitle.innerText = "My Account";
+                    subTitle.innerText = "Simamia taarifa zako za siri na usalama wa akaunti.";
+                } else if(pageId === 'cv') {
+                    mainTitle.innerText = "CV Builder Workspace";
+                    subTitle.innerText = "Jaza taarifa zako kutengeneza CV yenye viwango vya juu.";
+                } else if(pageId === 'cover') {
+                    mainTitle.innerText = "Cover Letter Workspace";
+                    subTitle.innerText = "Tengeneza barua kali za maombi ya kazi.";
+                } else if(pageId === 'docs') {
+                    mainTitle.innerText = "My Documents Library";
+                    subTitle.innerText = "Nyaraka zako zote zilizookolewa salama kwenye maktaba ya CareerForge.";
+                } else if(pageId === 'payments') {
+                    mainTitle.innerText = "Payments & Premium Upgrade";
+                    subTitle.innerText = "Ongeza salio au thibitisha malipo yako ya Premium hapa.";
+                }
+            } catch(e) { console.error("Navigation System Error bypassed safely:", e); }
+        }
+
+        function logout() { localStorage.clear(); location.reload(); }
     </script>
 </body>
 </html>
