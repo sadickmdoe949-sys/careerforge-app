@@ -1,8 +1,8 @@
-const express = require('express');
+const express = require('express'); 
 const mongoose = require('mongoose');
 const cors = require('cors');
-const bcrypt = require('bcryptjs');
-const path = require('path'); // Nimeongeza hii
+const bcrypt = require('bcryptjs'); // Inatumia bcryptjs
+const path = require('path'); 
 
 const app = express();
 app.use(express.json());
@@ -25,13 +25,12 @@ const userSchema = new mongoose.Schema({
 
 const User = mongoose.model('User', userSchema);
 
-// === NJIA KUU (Hapa ndipo tumebadilisha) ===
-// Sasa inatumia path kuelekeza kwenye index.html
+// === NJIA KUU ===
 app.get('/', (req, res) => {
     res.sendFile(path.join(__dirname, 'index.html'));
 });
 
-// --- NJIA YA KUJISAJILI ---
+// --- NJIA YA KUJISAJILI (Salama na Hashing) ---
 app.post('/api/register', async (req, res) => {
     try {
         const { fullName, email, password } = req.body;
@@ -39,6 +38,7 @@ app.post('/api/register', async (req, res) => {
         const userExists = await User.findOne({ email });
         if (userExists) return res.status(400).json({ message: 'Email hii tayari imeshasajiliwa!' });
 
+        // Kufunga password kwa usalama kabla ya kwenda kwenye Database
         const hashedPassword = await bcrypt.hash(password, 10);
 
         const newUser = new User({ fullName, email, password: hashedPassword, documents: [] });
@@ -50,13 +50,14 @@ app.post('/api/register', async (req, res) => {
     }
 });
 
-// --- NJIA YA KUINGIA ---
+// --- NJIA YA KUINGIA (Inalinganisha kwa Usalama) ---
 app.post('/api/login', async (req, res) => {
     try {
         const { email, password } = req.body;
         const user = await User.findOne({ email });
         if (!user) return res.status(400).json({ message: 'Email au Password si sahihi!' });
 
+        // Kulinganisha password iliyoandikwa na ile iliyofungwa kwenye Database
         const isMatch = await bcrypt.compare(password, user.password);
         if (!isMatch) return res.status(400).json({ message: 'Email au Password si sahihi!' });
 
