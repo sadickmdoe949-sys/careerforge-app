@@ -14,52 +14,33 @@
             --text-muted: #64748b;
             --border-color: #e2e8f0;
             --card-bg: #ffffff;
-            --wallet-blue: #0056e0;
         }
 
         * { box-sizing: border-box; margin: 0; padding: 0; font-family: 'Segoe UI', system-ui, sans-serif; }
-        body { display: flex; background-color: var(--main-bg); color: var(--text-dark); min-height: 100vh; overflow-x: hidden; }
+        body { display: flex; background-color: var(--main-bg); color: var(--text-dark); min-height: 100vh; }
 
         /* AUTH LAYER */
         #auth-overlay { position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(7, 34, 79, 0.98); display: flex; align-items: center; justify-content: center; z-index: 99999; }
         .auth-card { background: white; padding: 36px; border-radius: 16px; width: 100%; max-width: 420px; box-shadow: 0 20px 25px -5px rgba(0,0,0,0.3); }
-        .auth-toggle { display: flex; justify-content: space-between; margin-bottom: 24px; border-bottom: 2px solid #e2e8f0; padding-bottom: 12px; }
-        .auth-toggle span { cursor: pointer; font-weight: 700; color: var(--text-muted); font-size: 15px; }
-        .auth-toggle span.active { color: var(--primary-blue); border-bottom: 3px solid var(--primary-blue); padding-bottom: 11px; }
+        .auth-toggle { display: flex; justify-content: space-between; margin-bottom: 24px; border-bottom: 2px solid #e2e8f0; }
+        .auth-toggle span { cursor: pointer; font-weight: 700; color: var(--text-muted); font-size: 15px; padding-bottom: 11px; }
+        .auth-toggle span.active { color: var(--primary-blue); border-bottom: 3px solid var(--primary-blue); }
 
-        /* Sidebar Navigation */
-        .sidebar { width: 260px; background-color: var(--sidebar-bg); color: #ffffff; padding: 24px 16px; display: flex; flex-direction: column; justify-content: space-between; flex-shrink: 0; transition: 0.3s; }
-        .brand { display: flex; align-items: center; gap: 12px; margin-bottom: 32px; padding-left: 8px; }
-        .menu { list-style: none; display: flex; flex-direction: column; gap: 4px; }
-        .menu-item a { display: flex; align-items: center; gap: 12px; color: #94a3b8; text-decoration: none; padding: 12px; border-radius: 8px; font-size: 14px; cursor: pointer; transition: all 0.2s; }
-        .menu-item a:hover { background-color: rgba(255, 255, 255, 0.05); color: #ffffff; }
-        .menu-item.active a { background-color: var(--primary-blue); color: #ffffff; font-weight: 600; }
-        .premium-box { background: rgba(255,255,255,0.05); border: 1px solid rgba(255,255,255,0.1); border-radius: 12px; padding: 16px; text-align: center; }
-        .premium-box h3 { font-size: 14px; margin-bottom: 8px; color: #fbbf24; }
-        .btn-upgrade { background-color: var(--primary-blue); color: white; border: none; padding: 8px 16px; border-radius: 6px; font-size: 13px; font-weight: 600; cursor: pointer; width: 100%; }
-
-        /* Main Workspace */
-        .main-container { flex-grow: 1; padding: 32px; overflow-y: auto; height: 100vh; }
-        .header { display: flex; justify-content: space-between; align-items: center; padding-bottom: 12px; }
-        .menu-toggle { display: none; font-size: 24px; cursor: pointer; margin-right: 15px; }
-
-        /* Responsive Mobile Settings */
-        @media (max-width: 768px) {
-            .sidebar { position: fixed; left: -260px; height: 100%; z-index: 9999; }
-            .sidebar.active { left: 0; }
-            .menu-toggle { display: block; }
-        }
-
-        /* Standard Components */
         .hidden { display: none !important; }
-        .header-right { display: flex; align-items: center; gap: 16px; }
-        .welcome-text h2 { font-size: 26px; font-weight: 700; color: var(--text-dark); margin-bottom: 4px; }
-        .welcome-text p { color: var(--text-muted); font-size: 14px; }
-        .stat-card { background-color: var(--card-bg); border-radius: 14px; padding: 24px; display: flex; align-items: center; gap: 16px; border: 1px solid var(--border-color); }
-        .stats-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(200px, 1fr)); gap: 20px; }
-        .form-control { width: 100%; padding: 10px 14px; border: 1px solid var(--border-color); border-radius: 8px; }
-        .btn-action-start { background-color: var(--primary-blue); color: #ffffff; border: none; padding: 10px; border-radius: 8px; cursor: pointer; width: 100%; }
-        .dashboard-card { background-color: var(--card-bg); border-radius: 14px; border: 1px solid var(--border-color); padding: 24px; }
+        .form-group { margin-bottom: 15px; }
+        .form-control { width: 100%; padding: 10px; margin-top: 5px; border: 1px solid #ccc; border-radius: 8px; }
+        .btn-action-start { background-color: var(--primary-blue); color: white; border: none; padding: 12px; border-radius: 8px; cursor: pointer; width: 100%; font-weight: bold; }
+
+        /* Sidebar & Layout */
+        .sidebar { width: 260px; background-color: var(--sidebar-bg); color: #ffffff; padding: 24px; flex-shrink: 0; }
+        .menu-item a { display: block; padding: 12px; color: #94a3b8; text-decoration: none; cursor: pointer; }
+        .menu-item.active a { background: var(--primary-blue); color: white; border-radius: 8px; }
+        .main-container { flex-grow: 1; padding: 32px; }
+        
+        @media (max-width: 768px) {
+            .sidebar { position: fixed; left: -260px; height: 100%; z-index: 9999; transition: 0.3s; }
+            .sidebar.active { left: 0; }
+        }
     </style>
 </head>
 <body>
@@ -75,58 +56,58 @@
             </div>
             <div class="form-group"><label>Email</label><input type="email" id="auth-email" class="form-control"></div>
             <div class="form-group"><label>Password</label><input type="password" id="auth-password" class="form-control"></div>
-            <button class="btn-action-start" style="padding: 12px; margin-top:15px;" id="btn-auth-submit" onclick="handleAuth()">Ingia</button>
+            <button class="btn-action-start" id="btn-auth-submit" onclick="handleAuth()">Ingia</button>
         </div>
     </div>
 
     <aside class="sidebar" id="sidebar">
-        <div>
-            <div class="brand">🛠️ <h1 style="font-size: 20px;">CareerForge</h1></div>
-            <ul class="menu">
-                <li class="menu-item active" id="menu-dashboard"><a onclick="switchPage('dashboard')">📊 Dashboard</a></li>
-                <li class="menu-item" id="menu-account"><a onclick="switchPage('account')">👤 My Account</a></li>
-                <li class="menu-item" id="menu-cv"><a onclick="switchPage('cv')">🛠️ CV Builder</a></li>
-                <li class="menu-item" id="menu-cover"><a onclick="switchPage('cover')">✉️ Cover Letter</a></li>
-                <li class="menu-item" id="menu-docs"><a onclick="switchPage('docs')">📁 Documents</a></li>
-            </ul>
-        </div>
-        <div class="premium-box"><h3>👑 Go Premium</h3><button class="btn-upgrade" onclick="switchPage('payments')">Upgrade</button></div>
+        <h2>CareerForge</h2>
+        <ul style="list-style:none; margin-top:20px;">
+            <li class="menu-item active"><a>📊 Dashboard</a></li>
+            <li class="menu-item"><a>👤 My Account</a></li>
+        </ul>
     </aside>
 
     <main class="main-container">
-        <header class="header">
-            <div style="display:flex; align-items:center;">
-                <span class="menu-toggle" onclick="toggleSidebar()">☰</span>
-                <div class="welcome-text"><h2 id="page-main-title">Dashboard</h2></div>
-            </div>
-            <button class="btn-logout" onclick="logout()">Logout</button>
-        </header>
-
-        <div id="page-dashboard" class="dynamic-page">
-            <div class="dashboard-card"><h3>Karibu kwenye CareerForge!</h3></div>
-        </div>
+        <h1>Dashboard</h1>
+        <button onclick="logout()">Logout (Jaribu kuingia tena)</button>
     </main>
 
     <script>
-        // Mfumo wa Menu Toggle
-        function toggleSidebar() {
-            document.getElementById('sidebar').classList.toggle('active');
+        // 1. Kazi ya kubadilisha kati ya Login na Jisajili
+        function toggleAuthMode(mode) {
+            const loginTab = document.getElementById('tab-login');
+            const registerTab = document.getElementById('tab-register');
+            const registerFields = document.getElementById('register-fields');
+            const btnSubmit = document.getElementById('btn-auth-submit');
+
+            if (mode === 'register') {
+                registerTab.classList.add('active');
+                loginTab.classList.remove('active');
+                registerFields.classList.remove('hidden');
+                btnSubmit.innerText = "Jisajili";
+            } else {
+                loginTab.classList.add('active');
+                registerTab.classList.remove('active');
+                registerFields.classList.add('hidden');
+                btnSubmit.innerText = "Ingia";
+            }
         }
 
-        // Funga menu ukibonyeza link kwenye simu
-        document.querySelectorAll('.menu-item a').forEach(item => {
-            item.addEventListener('click', () => {
-                if (window.innerWidth <= 768) {
-                    document.getElementById('sidebar').classList.remove('active');
-                }
-            });
-        });
-
-        function switchPage(pageId) {
-            // Logi yako ya kubadilisha kurasa...
+        // 2. Kazi ya Kushughulikia Click ya Button (Auth)
+        function handleAuth() {
+            const email = document.getElementById('auth-email').value;
+            if(email) {
+                alert("Karibu! Tunaelekea Dashboard...");
+                document.getElementById('auth-overlay').style.display = 'none';
+            } else {
+                alert("Tafadhali jaza email kwanza!");
+            }
         }
-        
-        function logout() { localStorage.clear(); location.reload(); }
+
+        function logout() {
+            document.getElementById('auth-overlay').style.display = 'flex';
+        }
     </script>
 </body>
 </html>
