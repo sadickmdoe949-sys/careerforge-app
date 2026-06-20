@@ -34,7 +34,7 @@
         .auth-toggle span.active { color: var(--primary-blue); border-bottom: 3px solid var(--primary-blue); padding-bottom: 11px; }
 
         /* Sidebar Navigation */
-        .sidebar { width: 260px; background-color: var(--sidebar-bg); color: #ffffff; padding: 24px 16px; display: flex; flex-direction: column; justify-content: space-between; flex-shrink: 0; }
+        .sidebar { width: 260px; background-color: var(--sidebar-bg); color: #ffffff; padding: 24px 16px; display: flex; flex-direction: column; justify-content: space-between; flex-shrink: 0; transition: left 0.3s ease; }
         .brand { display: flex; align-items: center; gap: 12px; margin-bottom: 32px; padding-left: 8px; }
         
         .menu { list-style: none; display: flex; flex-direction: column; gap: 4px; }
@@ -47,7 +47,7 @@
         .btn-upgrade { background-color: var(--primary-blue); color: white; border: none; padding: 8px 16px; border-radius: 6px; font-size: 13px; font-weight: 600; cursor: pointer; width: 100%; }
 
         /* Main Workspace Content Area */
-        .main-container { flex-grow: 1; padding: 32px; display: flex; flex-direction: column; gap: 24px; overflow-y: auto; height: 100vh; }
+        .main-container { flex-grow: 1; padding: 32px; display: flex; flex-direction: column; gap: 24px; overflow-y: auto; height: 100vh; position: relative; }
         .header { display: flex; justify-content: space-between; align-items: center; padding-bottom: 12px; }
         .welcome-text h2 { font-size: 26px; font-weight: 700; color: var(--text-dark); margin-bottom: 4px; }
         .welcome-text p { color: var(--text-muted); font-size: 14px; }
@@ -101,9 +101,48 @@
         .empty-state { text-align: center; padding: 32px; color: var(--text-muted); font-size: 13px; }
         
         .hidden { display: none !important; }
+
+        /* Kitufe kipya cha kuzuia menu isizibe simu */
+        #mobile-menu-bar { display: none; background: #ffffff; padding: 12px 20px; border-bottom: 1px solid var(--border-color); align-items: center; justify-content: space-between; }
+        .btn-toggle { background: var(--sidebar-bg); color: white; border: none; padding: 8px 12px; border-radius: 6px; font-weight: 600; cursor: pointer; font-size: 13px; }
+
+        /* MABORESHO MAALUMU KWA AJILI YA SKRINI NDOGO (SIMU) */
+        @media (max-width: 768px) {
+            body { flex-direction: column; overflow: auto; }
+            
+            .sidebar {
+                position: fixed;
+                left: -260px; /* Ifiche sidebar upande wa kushoto */
+                top: 0;
+                height: 100vh;
+                z-index: 99999;
+                width: 260px;
+                box-shadow: 5px 0 15px rgba(0,0,0,0.2);
+            }
+            
+            /* Class hii itaongezwa na JS ili kuivuta sidebar ionekane */
+            .sidebar.active {
+                left: 0;
+            }
+
+            #mobile-menu-bar { display: flex; }
+            .main-container { padding: 16px; height: auto; overflow-y: visible; }
+            .header { flex-direction: column; align-items: flex-start; gap: 16px; }
+            .header-right { width: 100%; justify-content: space-between; }
+            
+            .stats-grid { grid-template-columns: 1fr; gap: 12px; }
+            .grid-split { grid-template-columns: 1fr; gap: 16px; }
+            .quick-actions-layout { grid-template-columns: 1fr; }
+            .doc-table th:nth-child(3), .doc-table td:nth-child(3) { display: none; } /* Ficha tarehe kwenye simu isisongane */
+        }
     </style>
 </head>
 <body>
+
+    <div id="mobile-menu-bar">
+        <button class="btn-toggle" onclick="toggleMobileSidebar(event)">☰ Fungua Menu</button>
+        <span style="font-weight: 700; color: var(--sidebar-bg); font-size: 15px;">CareerForge</span>
+    </div>
 
     <div id="auth-overlay">
         <div class="auth-card">
@@ -120,10 +159,10 @@
         </div>
     </div>
 
-    <aside class="sidebar">
+    <aside class="sidebar" id="app-sidebar">
         <div>
             <div class="brand">
-                <div class="brand-icon" style="background: #ffffff; color: #07224f;">🛠️</div>
+                <div class="brand-icon" style="background: #ffffff; color: #07224f; padding: 2px 6px; border-radius: 4px;">🛠️</div>
                 <div class="brand-text">
                     <h1 style="font-size: 20px; font-weight: 700;">CareerForge</h1>
                 </div>
@@ -259,8 +298,6 @@
 
     <script>
         let currentMode = 'login';
-        
-        // UTATUZI MKUU: Mfumo sasa unaenda moja kwa moja kwenye link yako ya live ya Render!
         const API_URL = 'https://careerforge-app.onrender.com/api';
 
         window.onload = function() {
@@ -271,8 +308,26 @@
                     document.getElementById('auth-overlay').classList.add('hidden');
                     updateUserUIDisplay(savedUser);
                     loadDocumentsTable();
+                    savedUser && userId && switchPage('dashboard');
                 }
             } catch(e) { console.error(e); }
+
+            // Funga sidebar mtumiaji akibonyeza popote nje ya menu kwenye simu
+            document.addEventListener('click', function(event) {
+                const sidebar = document.getElementById('app-sidebar');
+                const mobileBar = document.getElementById('mobile-menu-bar');
+                if (window.innerWidth <= 768 && sidebar.classList.contains('active')) {
+                    if (!sidebar.contains(event.target) && !mobileBar.contains(event.target)) {
+                        sidebar.classList.remove('active');
+                    }
+                }
+            });
+        }
+
+        // Kufungua na kufunga sidebar kwenye simu
+        function toggleMobileSidebar(event) {
+            event.stopPropagation();
+            document.getElementById('app-sidebar').classList.toggle('active');
         }
 
         function toggleAuthMode(mode) {
@@ -307,6 +362,7 @@
                 updateUserUIDisplay(data.fullName);
                 document.getElementById('auth-overlay').classList.add('hidden');
                 loadDocumentsTable();
+                switchPage('dashboard');
             } catch (error) { alert('Imeshindwa kuunganishwa na server. Hakikisha Backend yako inakimbia.'); }
         }
 
@@ -434,10 +490,15 @@
                     mainTitle.innerText = "Payments & Premium Upgrade";
                     subTitle.innerText = "Ongeza salio au thibitisha malipo yako ya Premium hapa.";
                 }
+
+                // UTATUZI: Funga menu kiotomatiki baada ya kuchagua link kwenye simu
+                const sidebar = document.getElementById('app-sidebar');
+                if (sidebar) {
+                    sidebar.classList.remove('active');
+                }
+
             } catch(e) { console.error("Navigation System Error bypassed safely:", e); }
         }
-
-        function logout() { localStorage.clear(); location.reload(); }
     </script>
 </body>
 </html>
