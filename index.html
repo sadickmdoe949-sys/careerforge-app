@@ -3,110 +3,78 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>CareerForge - Professional CV & Resume Builder</title>
-    
+    <title>CareerForge | Professional Dashboard</title>
     <style>
-        :root {
-            --sidebar-bg: #07224f;
-            --main-bg: #f4f7fc;
-            --primary-blue: #0066ff;
-            --text-dark: #1e293b;
-            --text-muted: #64748b;
-            --border-color: #e2e8f0;
-            --card-bg: #ffffff;
-        }
-
-        * { box-sizing: border-box; margin: 0; padding: 0; font-family: 'Segoe UI', system-ui, sans-serif; }
-        body { display: flex; background-color: var(--main-bg); color: var(--text-dark); min-height: 100vh; }
-
-        /* AUTH LAYER */
-        #auth-overlay { position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(7, 34, 79, 0.98); display: flex; align-items: center; justify-content: center; z-index: 99999; }
-        .auth-card { background: white; padding: 36px; border-radius: 16px; width: 100%; max-width: 420px; box-shadow: 0 20px 25px -5px rgba(0,0,0,0.3); }
-        .auth-toggle { display: flex; justify-content: space-between; margin-bottom: 24px; border-bottom: 2px solid #e2e8f0; }
-        .auth-toggle span { cursor: pointer; font-weight: 700; color: var(--text-muted); font-size: 15px; padding-bottom: 11px; }
-        .auth-toggle span.active { color: var(--primary-blue); border-bottom: 3px solid var(--primary-blue); }
-
-        .hidden { display: none !important; }
-        .form-group { margin-bottom: 15px; }
-        .form-control { width: 100%; padding: 10px; margin-top: 5px; border: 1px solid #ccc; border-radius: 8px; }
-        .btn-action-start { background-color: var(--primary-blue); color: white; border: none; padding: 12px; border-radius: 8px; cursor: pointer; width: 100%; font-weight: bold; }
-
-        /* Sidebar & Layout */
-        .sidebar { width: 260px; background-color: var(--sidebar-bg); color: #ffffff; padding: 24px; flex-shrink: 0; }
-        .menu-item a { display: block; padding: 12px; color: #94a3b8; text-decoration: none; cursor: pointer; }
-        .menu-item.active a { background: var(--primary-blue); color: white; border-radius: 8px; }
-        .main-container { flex-grow: 1; padding: 32px; }
+        :root { --sidebar-bg: #07224f; --main-bg: #f4f7fc; --primary-blue: #0066ff; }
+        * { box-sizing: border-box; margin: 0; padding: 0; font-family: sans-serif; }
+        body { display: flex; background-color: var(--main-bg); min-height: 100vh; }
         
-        @media (max-width: 768px) {
-            .sidebar { position: fixed; left: -260px; height: 100%; z-index: 9999; transition: 0.3s; }
-            .sidebar.active { left: 0; }
-        }
+        /* Auth */
+        #auth-overlay { position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: #07224f; display: flex; align-items: center; justify-content: center; z-index: 9999; }
+        .auth-card { background: white; padding: 30px; border-radius: 12px; width: 350px; }
+        .hidden { display: none !important; }
+        
+        /* Sidebar */
+        .sidebar { width: 260px; background-color: var(--sidebar-bg); color: white; padding: 20px; }
+        .menu-item { padding: 12px; cursor: pointer; border-radius: 8px; margin-bottom: 5px; }
+        .menu-item:hover { background: var(--primary-blue); }
+        
+        /* Main */
+        .main-container { flex-grow: 1; padding: 30px; }
+        .form-control { width: 100%; padding: 10px; margin: 10px 0; border: 1px solid #ccc; border-radius: 5px; }
+        .btn { width: 100%; padding: 12px; background: var(--primary-blue); color: white; border: none; cursor: pointer; border-radius: 5px; }
     </style>
 </head>
 <body>
 
     <div id="auth-overlay">
         <div class="auth-card">
-            <div class="auth-toggle">
-                <span id="tab-login" class="active" onclick="toggleAuthMode('login')">Ingia</span>
-                <span id="tab-register" onclick="toggleAuthMode('register')">Jisajili</span>
+            <h2 id="auth-title">Ingia</h2>
+            <div id="auth-fields">
+                <input type="email" id="email" class="form-control" placeholder="Email">
+                <input type="password" id="pass" class="form-control" placeholder="Password">
+                <button class="btn" onclick="handleAuth()">Ingia</button>
             </div>
-            <div id="register-fields" class="hidden">
-                <div class="form-group"><label>Jina Kamili</label><input type="text" id="auth-fullname" class="form-control"></div>
-            </div>
-            <div class="form-group"><label>Email</label><input type="email" id="auth-email" class="form-control"></div>
-            <div class="form-group"><label>Password</label><input type="password" id="auth-password" class="form-control"></div>
-            <button class="btn-action-start" id="btn-auth-submit" onclick="handleAuth()">Ingia</button>
         </div>
     </div>
 
-    <aside class="sidebar" id="sidebar">
+    <aside class="sidebar">
         <h2>CareerForge</h2>
-        <ul style="list-style:none; margin-top:20px;">
-            <li class="menu-item active"><a>📊 Dashboard</a></li>
-            <li class="menu-item"><a>👤 My Account</a></li>
-        </ul>
+        <div class="menu-item" onclick="alert('Dashboard inafunguka...')">📊 Dashboard</div>
+        <div class="menu-item" onclick="logout()">🚪 Logout</div>
     </aside>
 
     <main class="main-container">
         <h1>Dashboard</h1>
-        <button onclick="logout()">Logout (Jaribu kuingia tena)</button>
+        <p>Karibu kwenye mfumo wako.</p>
     </main>
 
     <script>
-        // 1. Kazi ya kubadilisha kati ya Login na Jisajili
-        function toggleAuthMode(mode) {
-            const loginTab = document.getElementById('tab-login');
-            const registerTab = document.getElementById('tab-register');
-            const registerFields = document.getElementById('register-fields');
-            const btnSubmit = document.getElementById('btn-auth-submit');
-
-            if (mode === 'register') {
-                registerTab.classList.add('active');
-                loginTab.classList.remove('active');
-                registerFields.classList.remove('hidden');
-                btnSubmit.innerText = "Jisajili";
-            } else {
-                loginTab.classList.add('active');
-                registerTab.classList.remove('active');
-                registerFields.classList.add('hidden');
-                btnSubmit.innerText = "Ingia";
+        // 1. Angalia Login wakati wa kufungua
+        window.onload = () => {
+            if (localStorage.getItem('isAuth') === 'true') {
+                document.getElementById('auth-overlay').classList.add('hidden');
             }
-        }
+        };
 
-        // 2. Kazi ya Kushughulikia Click ya Button (Auth)
+        // 2. Kazi ya Login
         function handleAuth() {
-            const email = document.getElementById('auth-email').value;
-            if(email) {
-                alert("Karibu! Tunaelekea Dashboard...");
-                document.getElementById('auth-overlay').style.display = 'none';
+            const email = document.getElementById('email').value;
+            const pass = document.getElementById('pass').value;
+            
+            if(email && pass) {
+                localStorage.setItem('isAuth', 'true');
+                document.getElementById('auth-overlay').classList.add('hidden');
+                alert("Karibu!");
             } else {
-                alert("Tafadhali jaza email kwanza!");
+                alert("Tafadhali jaza maelezo yote!");
             }
         }
 
+        // 3. Kazi ya Logout
         function logout() {
-            document.getElementById('auth-overlay').style.display = 'flex';
+            localStorage.removeItem('isAuth');
+            location.reload();
         }
     </script>
 </body>
