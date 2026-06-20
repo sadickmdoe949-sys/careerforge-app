@@ -260,11 +260,8 @@
     <script>
         let currentMode = 'login';
         
-        // UTATUZI: Badala ya localhost, mfumo sasa unatumia Live Domain au unarudi kwenye local ukiwa offline.
-        // Unapo-host backend yako (kama render), weka link ya live hapa.
-        const API_URL = window.location.hostname === 'localhost' || window.location.hostname === '127.0.0.1'
-            ? 'http://localhost:5000/api'
-            : 'https://api-yako-ya-backend.onrender.com/api'; // <--- Badilisha hii ukiweka backend live
+        // UTATUZI MKUU: Mfumo sasa unaenda moja kwa moja kwenye link yako ya live ya Render!
+        const API_URL = 'https://careerforge-app.onrender.com/api';
 
         window.onload = function() {
             try {
@@ -284,7 +281,7 @@
             document.getElementById('tab-register').classList.remove('active');
             document.getElementById('register-fields').classList.add('hidden');
             if (mode === 'register') {
-                document.getElementById('tab-register').classList.add('active'); // REKEBISHO: classList.add badala ya classList.add pekee
+                document.getElementById('tab-register').classList.add('active');
                 document.getElementById('register-fields').classList.remove('hidden');
                 document.getElementById('btn-auth-submit').innerText = 'Kamilisha Usajili';
             } else {
