@@ -277,7 +277,7 @@
             <div class="dashboard-card">
                 <h4 class="card-title">Maktaba ya Nyaraka Zako Zote</h4>
                 <div id="docs-full-wrapper">
-                    <div class="empty-state">Hifadhi kwanza CV au Barua ili zionekane hapa.</div>
+                    <div class="empty-state">Hifadhi kwanza CV au Barua iti zionekane hapa.</div>
                 </div>
             </div>
         </div>
@@ -298,7 +298,8 @@
 
     <script>
         let currentMode = 'login';
-        const API_URL = 'https://careerforge-app.onrender.com/api';
+        // Kama unajaribu kwenye kompyuta yako (localhost), tumia '/api' pekee.
+        const API_URL = '/api'; 
 
         window.onload = function() {
             try {
@@ -308,11 +309,10 @@
                     document.getElementById('auth-overlay').classList.add('hidden');
                     updateUserUIDisplay(savedUser);
                     loadDocumentsTable();
-                    savedUser && userId && switchPage('dashboard');
+                    switchPage('dashboard');
                 }
             } catch(e) { console.error(e); }
 
-            // Funga sidebar mtumiaji akibonyeza popote nje ya menu kwenye simu
             document.addEventListener('click', function(event) {
                 const sidebar = document.getElementById('app-sidebar');
                 const mobileBar = document.getElementById('mobile-menu-bar');
@@ -324,7 +324,6 @@
             });
         }
 
-        // Kufungua na kufunga sidebar kwenye simu
         function toggleMobileSidebar(event) {
             event.stopPropagation();
             document.getElementById('app-sidebar').classList.toggle('active');
@@ -381,8 +380,8 @@
             if(!userId) return;
             try {
                 const response = await fetch(API_URL + `/documents?userId=${userId}`);
-                const documents = await response.json();
                 if (!response.ok) return;
+                const documents = await response.json();
                 updateStatsAndTable(documents);
             } catch (e) { console.error('Error loading documents:', e); }
         }
@@ -407,7 +406,11 @@
                 let tableHTML = `<table class="doc-table"><thead><tr><th>Jina la Faili</th><th>Aina</th><th>Tarehe</th><th>Action</th></tr></thead><tbody>`;
                 documents.forEach((doc) => {
                     const badge = doc.type === 'CV' ? '<span class="badge" style="background:#e0f2fe; color:#0369a1;">CV</span>' : '<span class="badge" style="background:#dcfce7; color:#15803d;">Letter</span>';
-                    tableHTML += `<tr><td>📄 ${doc.title}</td><td>${badge}</td><td>${doc.date}</td><td><button class="btn-view-all" style="color:var(--primary-blue);" onclick="triggerDownloadMock()">Download</button></td></tr>`;
+                    
+                    // Kubadilisha trigger ya zamani iite mfumo halisi wa kupakua PDF
+                    const docData = JSON.stringify({ fullName: doc.title.replace('.pdf', ''), email: localStorage.getItem('userEmail'), skills: doc.skills || '', experience: doc.experience || '' });
+                    
+                    tableHTML += `<tr><td>📄 ${doc.title}</td><td>${badge}</td><td>${doc.date}</td><td><button class="btn-view-all" style="color:var(--primary-blue);" onclick='triggerRealDownload(${docData})'>Download</button></td></tr>`;
                 });
                 tableHTML += `</tbody></table>`;
 
@@ -416,26 +419,60 @@
             } catch(e) { console.error(e); }
         }
 
+        // --- FUNGUO YA KUSHUSHA PDF HALISI KUTOKA BACKEND ---
+        async function triggerRealDownload(cvData) {
+            try {
+                let currentDl = parseInt(document.getElementById('stat-dl-count').innerText);
+                document.getElementById('stat-dl-count').innerText = currentDl + 1;
+
+                const response = await fetch(API_URL + '/generate-pdf', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({
+                        fullName: cvData.fullName,
+                        email: cvData.email,
+                        skills: cvData.skills || 'Ujuzi wa Kiteknolojia na Uongozi',
+                        experience: cvData.experience || 'Uzoefu wa Kazi na Miradi mbalimbali'
+                    })
+                });
+
+                if (!response.ok) throw new Error('Seva imeshindwa kutengeneza PDF');
+
+                const blob = await response.blob();
+                const url = window.URL.createObjectURL(blob);
+                const a = document.createElement('a');
+                a.href = url;
+                a.download = `${cvData.fullName.replace(/\s+/g, '_')}_CV.pdf`;
+                document.body.appendChild(a);
+                a.click();
+                document.body.removeChild(a);
+                window.URL.revokeObjectURL(url);
+            } catch (error) {
+                alert('Marekebisho: Imeshindwa kupakua PDF halisi. Hakikisha seva imewashwa.');
+            }
+        }
+
         async function generateDocument(type) {
             const userId = localStorage.getItem('userId');
             if(!userId) return;
             const titleInput = type === 'CV' ? document.getElementById('cv-title') : document.getElementById('cl-title');
+            const expInput = type === 'CV' ? document.getElementById('cv-exp') : document.getElementById('cl-body');
             const title = titleInput.value.trim();
+            const content = expInput.value.trim();
+            
             if(!title) { alert(`Tafadhali andika kichwa cha habari!`); return; }
+            
             const date = new Date().toLocaleDateString('en-US', { month: 'short', day: 'numeric', year: 'numeric' });
-            try {
-                const response = await fetch(API_URL + '/documents/generate', {
-                    method: 'POST',
-                    headers: { 'Content-Type': 'application/json' },
-                    body: JSON.stringify({ userId, title: title + ".pdf", type, date })
-                });
-                if (!response.ok) return;
-                titleInput.value = '';
-                if(type === 'CV') document.getElementById('cv-exp').value = ''; else document.getElementById('cl-body').value = '';
-                loadDocumentsTable();
-                alert(`Hongera! ${type} yako imetengenezwa na kuhifadhiwa.`);
-                switchPage('dashboard');
-            } catch (error) { alert('Hitilafu ya Server wakati wa kutengeneza hati.'); }
+            
+            // Moja kwa moja tunapakua PDF halisi pindi tu mtumiaji anapoitengeneza
+            const userFullName = localStorage.getItem('userFullName') || title;
+            const userEmail = localStorage.getItem('userEmail') || '';
+            
+            triggerRealDownload({ fullName: userFullName, email: userEmail, skills: type === 'CV' ? content : '', experience: type === 'CV' ? content : '' });
+
+            titleInput.value = '';
+            expInput.value = '';
+            switchPage('dashboard');
         }
 
         function executePaymentMock() {
@@ -448,10 +485,9 @@
             switchPage('dashboard');
         }
 
-        function triggerDownloadMock() {
-            let currentDl = parseInt(document.getElementById('stat-dl-count').innerText);
-            document.getElementById('stat-dl-count').innerText = currentDl + 1;
-            alert('Kupakua kuanza hivi punde...');
+        function logout() {
+            localStorage.clear();
+            location.reload();
         }
 
         function switchPage(pageId) {
@@ -491,12 +527,8 @@
                     subTitle.innerText = "Ongeza salio au thibitisha malipo yako ya Premium hapa.";
                 }
 
-                // UTATUZI: Funga menu kiotomatiki baada ya kuchagua link kwenye simu
                 const sidebar = document.getElementById('app-sidebar');
-                if (sidebar) {
-                    sidebar.classList.remove('active');
-                }
-
+                if (sidebar) { sidebar.classList.remove('active'); }
             } catch(e) { console.error("Navigation System Error bypassed safely:", e); }
         }
     </script>
