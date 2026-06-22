@@ -11,6 +11,8 @@
     <meta property="og:type" content="website" />
     <meta property="og:image" content="https://images.unsplash.com/photo-1586281380349-632531db7ed4?q=80&w=1200&auto=format&fit=crop" />
 
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+
     <style>
         :root {
             --sidebar-bg: #07224f;
@@ -102,38 +104,41 @@
         
         .hidden { display: none !important; }
 
-        /* Kitufe kipya cha kuzuia menu isizibe simu */
         #mobile-menu-bar { display: none; background: #ffffff; padding: 12px 20px; border-bottom: 1px solid var(--border-color); align-items: center; justify-content: space-between; }
         .btn-toggle { background: var(--sidebar-bg); color: white; border: none; padding: 8px 12px; border-radius: 6px; font-weight: 600; cursor: pointer; font-size: 13px; }
 
-        /* MABORESHO MAALUMU KWA AJILI YA SKRINI NDOGO (SIMU) */
+        /* PREMIUM SELECTION GRID & PAYWALL STYLING */
+        .template-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(250px, 1fr)); gap: 16px; margin-top: 15px; }
+        .template-card { background: #ffffff; border: 2px solid #e2e8f0; border-radius: 12px; padding: 20px; cursor: pointer; transition: all 0.3s ease; position: relative; }
+        .template-card:hover { border-color: var(--primary-blue); transform: translateY(-3px); box-shadow: 0 10px 20px rgba(0, 102, 255, 0.05); }
+        .template-card h4 { font-size: 15px; font-weight: 700; margin-bottom: 8px; color: var(--sidebar-bg); }
+        .template-card p { font-size: 12px; color: var(--text-muted); line-height: 1.5; }
+        .select-badge { display: inline-block; margin-top: 12px; font-size: 11px; font-weight: bold; color: var(--primary-blue); }
+        .pro-tip { background: #eff6ff; border-left: 4px solid var(--primary-blue); padding: 12px; border-radius: 0 8px 8px 0; margin-bottom: 16px; font-size: 13px; }
+        .back-btn { background: none; border: none; color: var(--text-muted); cursor: pointer; font-weight: 600; margin-bottom: 15px; font-size: 13px; display: inline-flex; align-items: center; gap: 6px; }
+
+        /* Preview Box Structure with Heavy Blur Paywall */
+        .preview-box-container { position: relative; background: white; padding: 30px; border-radius: 12px; border: 1px solid var(--border-color); max-width: 700px; margin: 0 auto; min-height: 480px; }
+        .blurred-content-part { filter: blur(7px); user-select: none; pointer-events: none; opacity: 0.25; margin-top: 20px; }
+        .paywall-overlay { position: absolute; top: 120px; left: 0; right: 0; bottom: 0; background: linear-gradient(to bottom, rgba(255,255,255,0) 0%, rgba(255,255,255,1) 25%); display: flex; justify-content: center; align-items: center; padding: 20px; }
+        .paywall-overlay.hidden { display: none !important; } /* Nimeongeza hii kulinda preview */
+        .paywall-content { background: #07224f; color: white; padding: 28px; border-radius: 16px; max-width: 440px; text-align: center; box-shadow: 0 15px 30px rgba(7,34,79,0.25); }
+        .paywall-content h3 { margin-bottom: 8px; font-size: 18px; }
+        .paywall-content p { font-size: 12px; color: #94a3b8; line-height: 1.6; margin-bottom: 14px; }
+        .price-tag { font-size: 22px; font-weight: bold; color: #00ffcc; margin-bottom: 16px; }
+
         @media (max-width: 768px) {
             body { flex-direction: column; overflow: auto; }
-            
-            .sidebar {
-                position: fixed;
-                left: -260px; /* Ifiche sidebar upande wa kushoto */
-                top: 0;
-                height: 100vh;
-                z-index: 99999;
-                width: 260px;
-                box-shadow: 5px 0 15px rgba(0,0,0,0.2);
-            }
-            
-            /* Class hii itaongezwa na JS ili kuivuta sidebar ionekane */
-            .sidebar.active {
-                left: 0;
-            }
-
+            .sidebar { position: fixed; left: -260px; top: 0; height: 100vh; z-index: 99999; width: 260px; box-shadow: 5px 0 15px rgba(0,0,0,0.2); }
+            .sidebar.active { left: 0; }
             #mobile-menu-bar { display: flex; }
             .main-container { padding: 16px; height: auto; overflow-y: visible; }
             .header { flex-direction: column; align-items: flex-start; gap: 16px; }
             .header-right { width: 100%; justify-content: space-between; }
-            
             .stats-grid { grid-template-columns: 1fr; gap: 12px; }
             .grid-split { grid-template-columns: 1fr; gap: 16px; }
             .quick-actions-layout { grid-template-columns: 1fr; }
-            .doc-table th:nth-child(3), .doc-table td:nth-child(3) { display: none; } /* Ficha tarehe kwenye simu isisongane */
+            .doc-table th:nth-child(3), .doc-table td:nth-child(3) { display: none; }
         }
     </style>
 </head>
@@ -189,6 +194,7 @@
             </div>
         </header>
 
+        <!-- DASHBOARD PAGE -->
         <div id="page-dashboard" class="dynamic-page">
             <section class="stats-grid" style="margin-bottom: 24px;">
                 <div class="stat-card">
@@ -244,6 +250,7 @@
             </div>
         </div>
 
+        <!-- ACCOUNT PAGE -->
         <div id="page-account" class="dynamic-page hidden">
             <div class="dashboard-card" style="max-width: 500px;">
                 <h4 class="card-title">Taarifa za Akaunti</h4>
@@ -255,33 +262,110 @@
             </div>
         </div>
 
+        <!-- CV BUILDER PAGE -->
         <div id="page-cv" class="dynamic-page hidden">
-            <div class="dashboard-card" style="max-width: 600px;">
-                <h4 class="card-title">Tengeneza CV Mpya</h4>
-                <div class="form-group"><label>Kazi Unayoomba (Job Title)</label><input type="text" id="cv-title" class="form-control" placeholder="Mfn: Software Engineer"></div>
-                <div class="form-group"><label>Uzoefu na Ustadi (Experience & Skills)</label><textarea id="cv-exp" class="form-control" style="height:120px;" placeholder="Andika maelezo ya kazi na uzoefu wako hapa..."></textarea></div>
-                <button class="btn-action-start" onclick="generateDocument('CV')">Hifadhi na Tengeneza CV</button>
+            <div id="cv-template-selection">
+                <div class="template-grid">
+                    <div class="template-card" onclick="selectCvTemplate('ATS')">
+                        <h4><i class="fa-solid fa-robot"></i> ATS-Optimized Corporate</h4>
+                        <p>Inapita kwenye mifumo ya kisasa ya uchujaji (ATS) ya makampuni makubwa ya kimataifa na mabenki kwa 99%.</p>
+                        <span class="select-badge">Chagua Muundo Huu →</span>
+                    </div>
+                    <div class="template-card" onclick="selectCvTemplate('Academic')">
+                        <h4><i class="fa-solid fa-graduation-cap"></i> Academic & Research</h4>
+                        <p>Maalum kwa maprofesa, wenye PhD, Masters, na watafiti. Inasisitiza machapisho, miradi na tuzo.</p>
+                        <span class="select-badge">Chagua Muundo Huu →</span>
+                    </div>
+                    <div class="template-card" onclick="selectCvTemplate('Executive')">
+                        <h4><i class="fa-solid fa-user-tie"></i> Executive Leadership</h4>
+                        <p>Kwa ajili ya CEOs, CFOs, na Wakurugenzi wanaoomba kazi serikalini au bodi za wakurugenzi duniani.</p>
+                        <span class="select-badge">Chagua Muundo Huu →</span>
+                    </div>
+                </div>
+            </div>
+
+            <!-- 🔥 HAPA NIMEONGEZA UTAMU WA MAWASILIANO YA SIMU NA EMAIL YA CV -->
+            <div id="cv-input-form" class="dashboard-card hidden" style="max-width: 600px;">
+                <button class="back-btn" onclick="resetCvWorkspace()"><i class="fa-solid fa-arrow-left"></i> Badilisha Aina ya CV</button>
+                <h4 class="card-title" id="cv-form-title">Tengeneza CV Mpya</h4>
+                <input type="hidden" id="selected-cv-type">
+                
+                <div class="form-group"><label>Namba ya Simu ya Kwenye CV</label><input type="text" id="cv-phone" class="form-control" placeholder="Mfn: +255 712 345 678"></div>
+                <div class="form-group"><label>Ujuzi Mkuu (Skills - Tenganisha kwa mkato `,` )</label><input type="text" id="cv-skills" class="form-control" placeholder="Mfn: Penetration Testing, Node.js, MongoDB"></div>
+                <div class="form-group"><label>Uzoefu wako wa Kazi (Experience)</label><textarea id="cv-exp" class="form-control" style="height:140px;" placeholder="Andika kwa ufupi majukumu na mafanikio yako makubwa..."></textarea></div>
+                
+                <button class="btn-action-start" onclick="generateDocument('CV')">Hifadhi na Uhakiki CV yako</button>
             </div>
         </div>
 
+        <!-- COVER LETTER BUILDER PAGE -->
         <div id="page-cover" class="dynamic-page hidden">
-            <div class="dashboard-card" style="max-width: 600px;">
-                <h4 class="card-title">Andika Barua ya Maombi (Cover Letter)</h4>
-                <div class="form-group"><label>Kichwa cha Barua (Subject)</label><input type="text" id="cl-title" class="form-control" placeholder="Mfn: Ombi la Kazi ya IT Specialist"></div>
-                <div class="form-group"><label>Mwili wa Barua (Letter Body)</label><textarea id="cl-body" class="form-control" style="height:140px;" placeholder="Andika barua yako kwa kina hapa..."></textarea></div>
-                <button class="btn-action-start" onclick="generateDocument('Cover Letter')">Hifadhi na Tengeneza Barua</button>
+            <div id="letter-template-selection">
+                <blockquote class="pro-tip">
+                    <strong>Maelekezo Rasmi:</strong> Barua hizi zimeundwa kwa mpangilio rasmi wa kisheria na kibiashara unaotumiwa na ofisi kuu za serikali, balozi, na mashirika ya kimataifa.
+                </blockquote>
+                <div class="template-grid">
+                    <div class="template-card" onclick="selectLetterTemplate('Cover Letter')">
+                        <h4>Official Corporate Pitch</h4>
+                        <p>Barua rasmi yenye ushawishi wa biashara na ki-uchumi kwa ajili ya mashirika binafsi na ya umma.</p>
+                        <span class="select-badge">Tumia Hii →</span>
+                    </div>
+                </div>
+            </div>
+
+            <!-- 🔥 HAPA PIA NIMEWEKA PHONE YA MAWASILIANO YA BARUA -->
+            <div id="letter-input-form" class="dashboard-card hidden" style="max-width: 600px;">
+                <button class="back-btn" onclick="resetLetterWorkspace()"><i class="fa-solid fa-arrow-left"></i> Badilisha Aina ya Barua</button>
+                <h4 class="card-title" id="letter-form-title">Andika Barua ya Maombi</h4>
+                <input type="hidden" id="selected-letter-type">
+                
+                <div class="form-group"><label>Namba yako ya Simu</label><input type="text" id="cl-phone" class="form-control" placeholder="Mfn: +255 654 321 098"></div>
+                <div class="form-group"><label>Kichwa cha Barua (Subject)</label><input type="text" id="cl-title" class="form-control" placeholder="Mfn: Ombi la Kazi ya IT Director"></div>
+                <div class="form-group"><label>Mwili wa Barua (Eleza Ujuzi & Uzoefu kwa Ufupi)</label><textarea id="cl-body" class="form-control" style="height:160px;" placeholder="Andika kwa ufupi uzoefu wako, AI itausafisha kuwa wa ki-Pro..."></textarea></div>
+                
+                <button class="btn-action-start" onclick="generateDocument('Cover Letter')">Hifadhi na Uhakiki Barua</button>
             </div>
         </div>
 
-        <div id="page-docs" class="dynamic-page hidden">
-            <div class="dashboard-card">
-                <h4 class="card-title">Maktaba ya Nyaraka Zako Zote</h4>
-                <div id="docs-full-wrapper">
-                    <div class="empty-state">Hifadhi kwanza CV au Barua iti zionekane hapa.</div>
+        <!-- PREVIEW & PAYWALL PAGE -->
+        <div id="page-preview" class="dynamic-page hidden">
+            <div class="preview-box-container">
+                <div class="visible-header-part">
+                    <h1 id="preview-doc-name" style="font-size: 22px; color: var(--sidebar-bg);">PROFESSIONAL DOCUMENT</h1>
+                    <p id="preview-doc-meta" style="color: var(--text-muted); font-size: 11px; margin-top: 4px;">Premium ATS Layout | Standard Verified</p>
+                    <hr style="border: 0; border-top: 2px solid var(--primary-blue); margin: 12px 0;">
+                    <h4 id="preview-doc-subject" style="color: var(--primary-blue); font-size: 14px;">SUBJECT: APP PREVIEW</h4>
+                </div>
+                
+                <div class="blurred-content-part">
+                    <p>Executive leadership matrix core competency mapping infrastructure strategic development project tracking protocols metrics framework analysis outcomes.</p>
+                    <p>Designed and deployed world-class systems across multi-million dollar corporations internationally with strict compliance standards and procedures.</p>
+                    <p>Advanced credentials verified by international boards of global review committees representing tier-1 institutional frameworks securely.</p>
+                </div>
+
+                <div class="paywall-overlay" id="preview-paywall">
+                    <div class="paywall-content">
+                        <i class="fa-solid fa-lock" style="font-size: 36px; color: #fbbf24; margin-bottom: 12px;"></i>
+                        <h3>Hati Hii Imekamilika kwa Kiwango cha Juu</h3>
+                        <p>Mifumo yetu imeingiza <strong>AI Keywords na ATS Layout</strong> ya kisasa inayomzuia HR kukataa. Ili kuipokea ikiwa kamili kama **PDF**, kamilisha malipo madogo ya huduma.</p>
+                        <div class="price-tag">TZS 3,000/= Tu</div>
+                        <button class="btn-upgrade" style="padding: 12px; font-size: 14px;" id="btn-pay-pdf">Lipia na Upokee File Lako Sasa</button>
+                    </div>
                 </div>
             </div>
         </div>
 
+        <!-- DOCUMENTS LIBRARY PAGE -->
+        <div id="page-docs" class="dynamic-page hidden">
+            <div class="dashboard-card">
+                <h4 class="card-title">Maktaba ya Nyaraka Zako Zote</h4>
+                <div id="docs-full-wrapper">
+                    <div class="empty-state">Hifadhi kwanza CV au Barua ili zionekane hapa.</div>
+                </div>
+            </div>
+        </div>
+
+        <!-- PAYMENTS PAGE -->
         <div id="page-payments" class="dynamic-page hidden">
             <div class="dashboard-card" style="max-width: 500px;">
                 <h4 class="card-title">Lipia Huduma ya Premium</h4>
@@ -291,14 +375,14 @@
                 </div>
                 <div class="form-group"><label>Kiasi (TZS)</label><input type="number" id="pay-amount-input" class="form-control" value="5000"></div>
                 <div class="form-group"><label>Namba ya Simu</label><input type="text" class="form-control" placeholder="07xxxxxxxx"></div>
-                <button class="btn-action-start" onclick="executePaymentMock()">Thibitisha Malipo Sasa</button>
+                <button class="btn-action-start" onclick="alert('Malipo yamepokelewa kwa mafanikio!')">Thibitisha Malipo Sasa</button>
             </div>
         </div>
     </main>
 
     <script>
         let currentMode = 'login';
-        const API_URL = '/api'; 
+        const API_URL = window.location.origin + '/api'; 
 
         window.onload = function() {
             try {
@@ -364,177 +448,175 @@
             } catch (error) { alert('Imeshindwa kuunganishwa na server. Hakikisha Backend yako inakimbia.'); }
         }
 
+        // 🔥 HAPA NDIO ILE SEHEMU ILIYOKATIKA NIMEIREKEBISHA SAKAFUNI IKAKAMILIKA
         function updateUserUIDisplay(name) {
             try {
                 document.getElementById('page-sub-title').innerText = `Welcome back, ${name}! Let's build your future.`;
                 document.getElementById('profile-user-display').innerText = name;
                 document.getElementById('acc-name').innerText = name;
                 document.getElementById('acc-email').innerText = localStorage.getItem('userEmail') || '-';
+                
+                // Tengeneza Initials za avatar mfano "Abubakar" inakuwa "A"
                 document.getElementById('avatar-initials').innerText = name.charAt(0).toUpperCase();
-            } catch(e) { console.error(e); }
+            } catch (e) { console.error('UI Display Error:', e); }
+        }
+
+        function switchPage(pageId) {
+            document.querySelectorAll('.dynamic-page').forEach(p => p.classList.add('hidden'));
+            document.querySelectorAll('.menu-item').forEach(m => m.classList.remove('active'));
+            
+            const activePage = document.getElementById(`page-${pageId}`);
+            if(activePage) activePage.classList.remove('hidden');
+            
+            const activeMenu = document.getElementById(`menu-${pageId}`);
+            if(activeMenu) activeMenu.classList.add('active');
+
+            // Set titles dynamically
+            const mainTitle = document.getElementById('page-main-title');
+            if (pageId === 'dashboard') mainTitle.innerText = "Dashboard Overview";
+            else if (pageId === 'account') mainTitle.innerText = "My Profile";
+            else if (pageId === 'cv') mainTitle.innerText = "Professional CV Builder";
+            else if (pageId === 'cover') mainTitle.innerText = "Cover Letter Generator";
+            else if (pageId === 'docs') mainTitle.innerText = "My Document Vault";
+            else if (pageId === 'payments') mainTitle.innerText = "Premium Ledger & Billing";
+
+            if (window.innerWidth <= 768) {
+                document.getElementById('app-sidebar').classList.remove('active');
+            }
+        }
+
+        // CV Management Workspace
+        function selectCvTemplate(type) {
+            document.getElementById('selected-cv-type').value = type;
+            document.getElementById('cv-form-title').innerText = `Muundo: ${type} CV`;
+            document.getElementById('cv-template-selection').classList.add('hidden');
+            document.getElementById('cv-input-form').classList.remove('hidden');
+        }
+
+        function resetCvWorkspace() {
+            document.getElementById('cv-template-selection').classList.remove('hidden');
+            document.getElementById('cv-input-form').classList.add('hidden');
+        }
+
+        // Letter Workspace
+        function selectLetterTemplate(type) {
+            document.getElementById('selected-letter-type').value = type;
+            document.getElementById('letter-template-selection').classList.add('hidden');
+            document.getElementById('letter-input-form').classList.remove('hidden');
+        }
+
+        function resetLetterWorkspace() {
+            document.getElementById('letter-template-selection').classList.remove('hidden');
+            document.getElementById('letter-input-form').classList.add('hidden');
+        }
+
+        // 🔥 INJINI MPYA YA FETCH KWA AJILI YA KUTUMA SIMU NA KUZALISHA PDF
+        async function generateDocument(docClass) {
+            const userId = localStorage.getItem('userId');
+            const fullName = localStorage.getItem('userFullName');
+            const email = localStorage.getItem('userEmail');
+
+            let phone = "";
+            let skills = "";
+            let experience = "";
+            let type = "";
+
+            if (docClass === 'CV') {
+                phone = document.getElementById('cv-phone').value.trim();
+                skills = document.getElementById('cv-skills').value.trim();
+                experience = document.getElementById('cv-exp').value.trim();
+                type = document.getElementById('selected-cv-type').value;
+                if(!phone || !skills || !experience) { alert("Jaza nafasi zote za CV!"); return; }
+            } else {
+                phone = document.getElementById('cl-phone').value.trim();
+                experience = document.getElementById('cl-body').value.trim();
+                skills = document.getElementById('cl-title').value.trim(); // Tunatumia title kama context ya skills
+                type = 'Cover Letter';
+                if(!phone || !experience || !skills) { alert("Jaza nafasi zote za barua!"); return; }
+            }
+
+            switchPage('preview');
+            document.getElementById('preview-doc-name').innerText = fullName.toUpperCase();
+            document.getElementById('preview-doc-subject').innerText = `TYPE: ${type.toUpperCase()}`;
+
+            // Set trigger kwenye button ya paywall
+            document.getElementById('btn-pay-pdf').onclick = async function() {
+                try {
+                    alert("Tunaandaa PDF yako ya ki-Pro kupitia Gemini AI... Tafadhali subiri kidogo.");
+                    const response = await fetch(`${API_URL}/generate-pdf`, {
+                        method: 'POST',
+                        headers: { 'Content-Type': 'application/json' },
+                        body: JSON.stringify({ userId, fullName, email, phone, skills, experience, type })
+                    });
+
+                    if(!response.ok) { alert("Kuna tatizo limetokea kuzalisha PDF."); return; }
+
+                    // Pokea File safi la PDF kutoka seva
+                    const blob = await response.blob();
+                    const link = document.createElement('a');
+                    link.href = window.URL.createObjectURL(blob);
+                    link.download = `${fullName.replace(/\s+/g, '_')}_${type}.pdf`;
+                    link.click();
+
+                    alert("✅ Imekamilika! PDF imepakuliwa.");
+                    loadDocumentsTable();
+                    switchPage('dashboard');
+                } catch (err) {
+                    alert("Server error wakati wa kupakua file lako.");
+                }
+            };
         }
 
         async function loadDocumentsTable() {
             const userId = localStorage.getItem('userId');
             if(!userId) return;
             try {
-                const response = await fetch(API_URL + `/documents?userId=${userId}`);
-                if (!response.ok) return;
-                const documents = await response.json();
-                updateStatsAndTable(documents);
-            } catch (e) { console.error('Error loading documents:', e); }
-        }
-
-        function updateStatsAndTable(documents) {
-            try {
-                const cvs = documents.filter(d => d.type === 'CV').length;
-                const cls = documents.filter(d => d.type === 'Cover Letter').length;
+                const response = await fetch(`${API_URL}/documents?userId=${userId}`);
+                const docs = await response.json();
+                
+                // Sasisha Dashboard stats
+                let cvs = docs.filter(d => d.type !== 'Cover Letter').length;
+                let letters = docs.filter(d => d.type === 'Cover Letter').length;
+                
                 document.getElementById('stat-cv-count').innerText = cvs;
-                document.getElementById('stat-cl-count').innerText = cls;
+                document.getElementById('stat-cl-count').innerText = letters;
+                document.getElementById('stat-dl-count').innerText = docs.length;
 
-                const recentWrapper = document.getElementById('recent-docs-list');
-                const fullWrapper = document.getElementById('docs-full-wrapper');
+                let tableHtml = `
+                    <table class="doc-table">
+                        <thead>
+                            <tr><th>Jina la Hati</th><th>Aina</th><th>Tarehe</th><th>Action</th></tr>
+                        </thead>
+                        <tbody>
+                `;
 
-                if (documents.length === 0) {
-                    const emptyHTML = `<div class="empty-state">Hakuna hati zilizohifadhiwa kwa sasa.</div>`;
-                    recentWrapper.innerHTML = emptyHTML;
-                    fullWrapper.innerHTML = emptyHTML;
+                if(docs.length === 0) {
+                    document.getElementById('recent-docs-list').innerHTML = `<div class="empty-state">Hakuna hati zilizohifadhiwa kwa sasa.</div>`;
+                    document.getElementById('docs-full-wrapper').innerHTML = `<div class="empty-state">Hifadhi kwanza CV au Barua ili zionekane hapa.</div>`;
                     return;
                 }
 
-                let tableHTML = `<table class="doc-table"><thead><tr><th>Jina la Faili</th><th>Aina</th><th>Tarehe</th><th>Action</th></tr></thead><tbody>`;
-                documents.forEach((doc) => {
-                    const badge = doc.type === 'CV' ? '<span class="badge" style="background:#e0f2fe; color:#0369a1;">CV</span>' : '<span class="badge" style="background:#dcfce7; color:#15803d;">Letter</span>';
-                    
-                    tableHTML += `<tr>
-                        <td>📄 ${doc.title}</td>
-                        <td>${badge}</td>
-                        <td>${new Date(doc.createdAt || Date.now()).toLocaleDateString('en-US', { month: 'short', day: 'numeric', year: 'numeric' })}</td>
-                        <td><a href="${doc.fileUrl}" target="_blank" class="btn-view-all" style="color:var(--primary-blue); text-decoration:none; font-weight:600;">Download</a></td>
-                    </tr>`;
-                });
-                tableHTML += `</tbody></table>`;
-
-                recentWrapper.innerHTML = tableHTML;
-                fullWrapper.innerHTML = tableHTML;
-            } catch(e) { console.error(e); }
-        }
-
-        async function generateDocument(type) {
-            const userId = localStorage.getItem('userId');
-            if (!userId) { alert('Tafadhali ingia kwenye akaunti kwanza!'); return; }
-            
-            const titleInput = type === 'CV' ? document.getElementById('cv-title') : document.getElementById('cl-title');
-            const expInput = type === 'CV' ? document.getElementById('cv-exp') : document.getElementById('cl-body');
-            const title = titleInput.value.trim();
-            const content = expInput.value.trim();
-            
-            if(!title || !content) { alert(`Tafadhali jaza sehemu zote muhimu!`); return; }
-            
-            const userFullName = localStorage.getItem('userFullName') || 'Mtumiaji';
-            const userEmail = localStorage.getItem('userEmail') || 'email@example.com';
-
-            try {
-                // Hapa sasa inapiga Cloudinary kupitia backend
-                const response = await fetch(API_URL + '/generate-pdf', {
-                    method: 'POST',
-                    headers: { 'Content-Type': 'application/json' },
-                    body: JSON.stringify({
-                        userId: userId,
-                        fullName: userFullName,
-                        email: userEmail,
-                        skills: type === 'CV' ? 'Ujuzi uliowekwa kwenye mfumo' : '', 
-                        experience: content,
-                        type: type === 'CV' ? 'CV' : 'Cover Letter',
-                        title: title
-                    })
+                docs.forEach(doc => {
+                    tableHtml += `
+                        <tr>
+                            <td><strong>${doc.title}</strong></td>
+                            <td><span class="badge" style="background:#eff6ff; color:#2563eb;">${doc.type}</span></td>
+                            <td>${doc.date}</td>
+                            <td><a href="${doc.fileUrl}" target="_blank" style="color:var(--primary-blue); font-weight:bold; text-decoration:none;"><i class="fa-solid fa-cloud-download"></i> Open</a></td>
+                        </tr>
+                    `;
                 });
 
-                if (!response.ok) {
-                    const errData = await response.json();
-                    alert(errData.message || 'Seva imeshindwa kutengeneza na kurusha PDF.');
-                    return;
-                }
+                tableHtml += `</tbody></table>`;
+                document.getElementById('recent-docs-list').innerHTML = tableHtml;
+                document.getElementById('docs-full-wrapper').innerHTML = tableHtml;
 
-                // Inashusha local copy kwa user hapo hapo
-                const blob = await response.blob();
-                const url = window.URL.createObjectURL(blob);
-                const a = document.createElement('a');
-                a.href = url;
-                a.download = `${title.replace(/\s+/g, '_')}_${type}.pdf`;
-                document.body.appendChild(a);
-                a.click();
-                document.body.removeChild(a);
-
-                alert('Hongera! Hati imetengenezwa na kuhifadhiwa mtandaoni salama!');
-                
-                titleInput.value = '';
-                expInput.value = '';
-                
-                loadDocumentsTable();
-                switchPage('dashboard');
-            } catch (error) {
-                console.error(error);
-                alert('Mawasiliano na seva yamefeli. Hakikisha seva yako ya Render iko hewani.');
-            }
-        }
-
-        function executePaymentMock() {
-            const amount = document.getElementById('pay-amount-input').value;
-            if(!amount || amount <= 0) return;
-            document.getElementById('wallet-display').innerText = `TZS ${parseInt(amount).toLocaleString()}`;
-            document.getElementById('stat-pay-count').innerText = "1";
-            document.getElementById('bell-count').innerText = "1";
-            alert(`Malipo ya TZS ${parseInt(amount).toLocaleString()} yamekamilika! Salio limeongezeka kwenye wallet.`);
-            switchPage('dashboard');
+            } catch (e) { console.error('Haikuweza kupakia faili zako.', e); }
         }
 
         function logout() {
             localStorage.clear();
-            location.reload();
-        }
-
-        function switchPage(pageId) {
-            try {
-                document.querySelectorAll('.dynamic-page').forEach(p => p.classList.add('hidden'));
-                document.querySelectorAll('.menu-item').forEach(m => m.classList.remove('active'));
-                
-                const targetPage = document.getElementById('page-' + pageId);
-                const targetMenu = document.getElementById('menu-' + pageId);
-                
-                if(targetPage) targetPage.classList.remove('hidden');
-                if(targetMenu) targetMenu.classList.add('active');
-                
-                const mainTitle = document.getElementById('page-main-title');
-                const subTitle = document.getElementById('page-sub-title');
-                const user = localStorage.getItem('userFullName') || 'Mtumiaji';
-
-                if(!mainTitle || !subTitle) return;
-
-                if(pageId === 'dashboard') {
-                    mainTitle.innerText = "Dashboard Overview";
-                    subTitle.innerText = `Welcome back, ${user}! Let's build your future.`;
-                } else if(pageId === 'account') {
-                    mainTitle.innerText = "My Account";
-                    subTitle.innerText = "Simamia na uhakiki taarifa zako za wasifu.";
-                } else if(pageId === 'cv') {
-                    mainTitle.innerText = "CV Builder Workspace";
-                    subTitle.innerText = "Jaza fomu hapa chini kutengeneza CV ya kisasa.";
-                } else if(pageId === 'cover') {
-                    mainTitle.innerText = "Cover Letter Generator";
-                    subTitle.innerText = "Andika barua rasmi ya maombi ya kazi kwa dakika chache.";
-                } else if(pageId === 'docs') {
-                    mainTitle.innerText = "My Documents Library";
-                    subTitle.innerText = "Hapa kuna orodha ya hati zako zote zilizopo Cloudinary.";
-                } else if(pageId === 'payments') {
-                    mainTitle.innerText = "Payments & Subscription";
-                    subTitle.innerText = "Weka salio au jiunge na Premium kufungua fursa zaidi.";
-                }
-                
-                if (window.innerWidth <= 768) {
-                    document.getElementById('app-sidebar').classList.remove('active');
-                }
-            } catch(e) { console.error(e); }
+            window.location.reload();
         }
     </script>
 </body>
